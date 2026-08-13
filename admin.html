@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holder Portal - Dedicated Admin Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .admin-table th {
+            background: var(--bg-accent-subtle);
+            font-family: var(--font-title);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-table tr:hover {
+            background: var(--bg-accent-subtle);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .status-badge.verified {
+            background: var(--status-success-bg);
+            color: var(--status-success);
+            border: 1px solid var(--status-success);
+        }
+
+        .status-badge.pending {
+            background: var(--status-live-bg);
+            color: var(--status-live);
+            border: 1px solid var(--status-live);
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .admin-stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .admin-stat-val {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+        }
+
+        .admin-stat-lbl {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- DYNAMIC BACKGROUND -->
+    <canvas id="bg-animated-canvas"></canvas>
+
+    <!-- ADMIN HEADER -->
+    <header>
+        <a href="index.html" class="logo" aria-label="Holder Admin">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            Holder Admin Portal
+        </a>
+        <div class="header-actions">
+            <span class="chip" style="background: var(--status-success-bg); color: var(--status-success); border-color: var(--status-success); font-weight:700;">
+                🔒 E2EE Server Active
+            </span>
+            <a href="index.html" class="btn btn-sm btn-secondary">🌐 Return to Main Portal</a>
+        </div>
+    </header>
+
+    <div class="container" style="padding-top: 90px;">
+        <!-- STATS OVERVIEW -->
+        <div class="admin-grid">
+            <div class="admin-stat-card">
+                <div class="admin-stat-val" id="statUsers">0</div>
+                <div class="admin-stat-lbl">Total Registered Users</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-val" id="statVerified" style="color: var(--status-success);">0</div>
+                <div class="admin-stat-lbl">Verified Users (OTP Passed)</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-val" id="statJobs" style="color: var(--status-bio);">0</div>
+                <div class="admin-stat-lbl">Job & Placement Vacancies</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-val" id="statScans" style="color: var(--status-wiki);">0</div>
+                <div class="admin-stat-lbl">Biomedical AI Scans</div>
+            </div>
+        </div>
+
+        <!-- USER MANAGEMENT CARD -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <h2 class="card-title">👥 Registered Users & Verification Directory</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+                        Manage SQLite user credentials, verification states, and public key RSA fingerprints.
+                    </p>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="loadAdminData()">🔄 Refresh Directory</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email Address</th>
+                            <th>Mobile</th>
+                            <th>Email Verification</th>
+                            <th>Public Key (RSA)</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted);">Loading database user directory...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- JOB VACANCY POSTING FORM & SERVER SECURITY DETAILS -->
+        <div class="guide-section-grid" style="margin-top: 0;">
+            <div class="card" style="margin-bottom:0;">
+                <div class="card-header">
+                    <h3 class="card-title" style="font-size: 1.15rem;">💼 Post New Job / Internship Vacancy</h3>
+                </div>
+                <form id="adminJobForm" onsubmit="handleAdminAddJob(event)">
+                    <div class="form-group">
+                        <label>Job Title</label>
+                        <input type="text" id="jobTitle" class="input-control" required placeholder="e.g. AI Research Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="jobCompany" class="input-control" required placeholder="e.g. Google Cloud">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="jobLocation" class="input-control" required placeholder="e.g. Bangalore (Hybrid)">
+                    </div>
+                    <div class="form-group">
+                        <label>Salary / Stipend</label>
+                        <input type="text" id="jobSalary" class="input-control" placeholder="e.g. ₹15,00,000 Lpa">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="jobType" class="select-control">
+                            <option value="Job">Job (Full-Time)</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Placement">Student Placement Highlight</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Application Link</label>
+                        <input type="url" id="jobLink" class="input-control" required placeholder="https://example.com/apply">
+                    </div>
+                    <div class="form-group">
+                        <label>LinkedIn Profile Link (Optional for Placements)</label>
+                        <input type="url" id="jobLinkedin" class="input-control" placeholder="https://linkedin.com/in/student">
+                    </div>
+                    <button type="submit" class="btn w-full" style="width:100%;">Post Vacancy to DB</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-bottom:0;">
+                <div class="card-header">
+                    <h3 class="card-title" style="font-size: 1.15rem;">🔑 Server RSA-2048 Public Key</h3>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    This public key is fetched by client browsers to execute AES-256-GCM + RSA-OAEP hybrid E2EE payload encryption before network transmission.
+                </p>
+                <pre id="adminServerKeyDisplay" style="font-family: monospace; font-size: 0.72rem; color: var(--status-bio); background: rgba(0,0,0,0.4); padding: 12px; border-radius: var(--radius-sm); overflow-x: auto; white-space: pre-wrap; word-break: break-all;">Fetching server public key...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="backend.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAdminData();
+        });
+
+        async function loadAdminData() {
+            try {
+                // Load Stats
+                const statsRes = await Backend.Admin.getStats();
+                const s = statsRes.stats;
+                document.getElementById("statUsers").textContent = s.totalUsers;
+                document.getElementById("statVerified").textContent = s.verifiedUsers;
+                document.getElementById("statJobs").textContent = s.totalJobs;
+                document.getElementById("statScans").textContent = s.totalScans;
+                document.getElementById("adminServerKeyDisplay").textContent = s.serverPublicKeyFingerprint || "Server Key Loaded";
+
+                // Load Users
+                const usersRes = await Backend.Admin.getUsers();
+                const users = usersRes.users || [];
+                const tbody = document.getElementById("userTableBody");
+
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No users registered in SQLite database yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td><strong>#${u.id}</strong></td>
+                        <td>${u.name || '--'}</td>
+                        <td>${u.email}</td>
+                        <td>${u.mobile || 'N/A'}</td>
+                        <td>
+                            <span class="status-badge ${u.is_verified ? 'verified' : 'pending'}">
+                                ${u.is_verified ? '🟢 Verified' : '🟡 Unverified (OTP Pending)'}
+                            </span>
+                        </td>
+                        <td title="${u.public_key || ''}" style="font-family:monospace; font-size:0.75rem;">
+                            ${u.public_key ? u.public_key.substring(0, 24) + '...' : 'None'}
+                        </td>
+                        <td style="font-size:0.75rem; color:var(--text-secondary);">
+                            ${new Date(u.created_at || Date.now()).toLocaleDateString()}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="toggleVerify(${u.id})">
+                                ${u.is_verified ? 'Unverify' : 'Verify'}
+                            </button>
+                            <button class="btn btn-sm" style="background:var(--status-live);" onclick="deleteUser(${u.id})">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join("");
+
+            } catch (err) {
+                console.error("Admin data load error:", err);
+            }
+        }
+
+        async function toggleVerify(id) {
+            try {
+                await Backend.Admin.toggleVerifyUser(id);
+                await loadAdminData();
+            } catch (err) {
+                alert("Failed to toggle verification: " + err.message);
+            }
+        }
+
+        async function deleteUser(id) {
+            if (confirm(`Are you sure you want to delete User #${id}?`)) {
+                try {
+                    await Backend.Admin.deleteUser(id);
+                    await loadAdminData();
+                } catch (err) {
+                    alert("Delete failed: " + err.message);
+                }
+            }
+        }
+
+        async function handleAdminAddJob(e) {
+            e.preventDefault();
+            const jobData = {
+                title: document.getElementById("jobTitle").value,
+                company: document.getElementById("jobCompany").value,
+                location: document.getElementById("jobLocation").value,
+                salary: document.getElementById("jobSalary").value,
+                type: document.getElementById("jobType").value,
+                link: document.getElementById("jobLink").value,
+                linkedin_profile: document.getElementById("jobLinkedin").value
+            };
+
+            try {
+                await Backend.Admin.addJob(jobData);
+                alert("Job vacancy posted to database!");
+                document.getElementById("adminJobForm").reset();
+                await loadAdminData();
+            } catch (err) {
+                alert("Failed to post job: " + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holder - English Communication & Career Growth Portal</title>
+    <!-- Three.js Library for 3D AI Assistant Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://platform.linkedin.com/badges/js/profile.js" async defer></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- DYNAMIC ANIMATED BACKGROUND CANVAS & AMBIENT GLOW BLOBS -->
+    <canvas id="bg-animated-canvas"></canvas>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="card-title" style="margin-bottom: 4px;">Future India Placement AI</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">End-to-End Encrypted
+                Authentication</p>
+
+            <div class="modal-tabs">
+                <button onclick="switchAuthMode('signup')" id="auth-tab-signup"
+                    class="modal-tab-btn active">Signup</button>
+                <button onclick="switchAuthMode('login')" id="auth-tab-login" class="modal-tab-btn">Login</button>
+            </div>
+
+            <!-- SIGN UP -->
+            <form id="auth-signup-form" onsubmit="handleAuthSignup(event)">
+                <div class="form-group"><label>Full Name</label><input type="text" id="signup-name"
+                        class="input-control" required placeholder="Rank Holder"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="signup-email" class="input-control"
+                        required placeholder="gokulsharmila82@gmail.com"></div>
+                <div class="form-group"><label>Mobile (Optional)</label><input type="text" id="signup-mobile"
+                        class="input-control" placeholder="+91 8610017559"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="signup-password"
+                        class="input-control" required placeholder="....."></div>
+                <button type="submit" id="btn-signup" class="btn w-full" style="width: 100%;">Register Account</button>
+            </form>
+
+            <!-- LOGIN -->
+            <form id="auth-login-form" onsubmit="handleAuthLogin(event)" class="hidden">
+                <div class="form-group"><label>Email</label><input type="email" id="login-email" class="input-control"
+                        required placeholder="gokulsharmila82@gmail.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="login-password"
+                        class="input-control" required placeholder="........"></div>
+                <button type="submit" id="btn-login" class="btn w-full" style="width: 100%;">Login Securely</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EMAIL VERIFICATION OTP MODAL -->
+    <div id="verify-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="card-title" style="margin-bottom: 4px;">✉️ Verify Email Address</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Enter the 6-digit verification code sent to <strong id="verifyEmailTarget"
+                    style="color:var(--brand-primary)">--</strong>
+            </p>
+
+            <form id="verify-otp-form" onsubmit="handleVerifyEmailSubmit(event)">
+                <div class="form-group">
+                    <label>6-Digit Verification Code</label>
+                    <input type="text" id="verify-code-input" class="input-control" required placeholder="e.g. 482915"
+                        maxlength="6"
+                        style="text-align: center; font-size: 1.4rem; letter-spacing: 0.2em; font-family: monospace;">
+                </div>
+                <div id="verifyCodeDisplayHint"
+                    style="font-size: 0.8rem; background: var(--status-success-bg); color: var(--status-success); border: 1px solid var(--status-success); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 16px; display: none;">
+                    Verification Code: <strong id="hintOtpCode">--</strong>
+                </div>
+                <button type="submit" class="btn w-full" style="width: 100%;">Verify & Sign In</button>
+            </form>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                <button type="button" onclick="handleResendCode()" class="chip" style="margin: 0;">📩 Resend
+                    Code</button>
+                <button type="button" onclick="document.getElementById('verify-modal').classList.add('hidden')"
+                    class="chip" style="margin: 0; color: var(--status-live);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="card-title" style="margin-bottom: 16px;">Account Settings</h2>
+            <div style="text-align: left; margin-bottom: 16px; font-size: 0.9rem;">
+                <p>Name: <span id="set-name" style="font-weight: 600;">Rank Holder</span></p>
+                <p>Email: <span id="set-email" style="font-weight: 600;">gokulsharmila82@gmail.com</span></p>
+                <p>Mobile: <span id="set-mobile" style="font-weight: 600;">+91 8610017559</span></p>
+            </div>
+            <button onclick="deactivateAccount()" class="btn"
+                style="background-color: var(--status-live); width: 100%;">Deactivate Account</button>
+            <button onclick="document.getElementById('settings-modal').classList.add('hidden')"
+                class="btn btn-secondary" style="width: 100%; margin-top: 8px;">Close</button>
+        </div>
+    </div>
+
+    <header>
+        <a href="#" class="logo" aria-label="Holder Home">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            Holder
+        </a>
+        <div class="header-actions">
+            <div class="notif-wrap">
+                <button class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()"
+                    aria-label="Job & Internship Notifications">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-panel-header">
+                        <span>Career Updates</span>
+                        <button class="chip" style="margin:0;" onclick="clearNotifications()">Clear all</button>
+                    </div>
+                    <div id="notifList"></div>
+                </div>
+            </div>
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                <span id="themeIcon">☀️</span> <span id="themeLabel">Light</span>
+            </button>
+            <a href="admin.html" class="btn btn-sm btn-secondary">⚙️ Admin Portal</a>
+            <div id="headerAuthArea">
+                <button class="btn btn-sm" id="headerSignInBtn"
+                    onclick="document.getElementById('auth-modal').classList.remove('hidden')">
+                    Sign In
+                </button>
+                <div class="user-profile-badge" id="headerUserBadge"
+                    style="display:none; align-items: center; gap: 8px; cursor: pointer;"
+                    onclick="document.getElementById('settings-modal').classList.remove('hidden')">
+                    <img id="headerUserAvatar" src="" alt="Avatar"
+                        style="width: 32px; height: 32px; border-radius: 50%;">
+                    <span class="user-email-label" id="headerUserEmail"
+                        style="font-weight: 600; font-size: 0.9rem;"></span>
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); authLogout()">Sign
+                        Out</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="tab-bar" role="tablist" aria-label="Portal Sections">
+            <button class="tab-btn active" id="tab-english-btn" role="tab" aria-selected="true" aria-controls="english"
+                onclick="switchTab('english', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                </svg>
+                English Communication & Interview Hub
+            </button>
+            <button class="tab-btn" id="tab-jobs-btn" role="tab" aria-selected="false" aria-controls="jobs"
+                onclick="switchTab('jobs', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+                Career Growth
+            </button>
+            <button class="tab-btn" id="tab-projects-btn" role="tab" aria-selected="false" aria-controls="projects"
+                onclick="switchTab('projects', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                Project Engine
+            </button>
+            <button class="tab-btn" id="tab-biomedical-btn" role="tab" aria-selected="false" aria-controls="biomedical"
+                onclick="switchTab('biomedical', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Biomedical Vision AI Scanner
+            </button>
+            <button class="tab-btn" id="tab-dashboard-btn" role="tab" aria-selected="false" aria-controls="dashboard"
+                onclick="switchTab('dashboard', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Protected User Dashboard
+            </button>
+        </nav>
+
+        <!-- TAB 1: English Communication & Interview Hub -->
+        <section id="english" class="tab-content active" role="tabpanel" aria-labelledby="tab-english-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🎙️ English Communication & AI Interview Partner</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Practice spoken English with real-time grammar corrections, explore top official online
+                        interview platforms, master HR questions, learn Group Discussion strategies, and watch
+                        integrated video guides.
+                    </p>
+                </div>
+
+                <div class="ai-mode-bar">
+                    <label for="aiCommModeSelect">Communication Mode:</label>
+                    <select id="aiCommModeSelect" class="select-control" onchange="handleCommModeChange()">
+                        <option value="friendly">Friendly mode</option>
+                        <option value="strictly">Strictly mode</option>
+                        <option value="teaching">Teaching mode</option>
+                    </select>
+
+                    <label for="aiModeSelect" style="margin-left: 12px;">Engine:</label>
+                    <select id="aiModeSelect" class="select-control" onchange="handleAiModeChange()">
+                        <option value="builtin">Built-in Partner</option>
+                        <option value="local">Local Practice Mode</option>
+                        <option value="live">Deploy Mode (API Key)</option>
+                    </select>
+                    <input type="password" id="apiKeyInput" class="input-control api-key-input"
+                        placeholder="Paste your API key" style="display:none;" onchange="saveApiKeyInMemory()">
+                    <span class="key-note" id="apiKeyNote" style="display:none;">
+                        Your key is kept only in this browser tab's memory for this session.
+                    </span>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statTurns">0</div>
+                        <div class="stat-label">Turns Practiced</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statFixes">0</div>
+                        <div class="stat-label">Corrections Given</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statFluency">100%</div>
+                        <div class="stat-label">Fluency Score</div>
+                    </div>
+                </div>
+
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Guided Practice &
+                        Interview Topics:</span>
+                    <div class="topic-chip-row" id="topicChipRow"></div>
+                </div>
+
+                <div class="ai-avatar-container">
+                    <!-- 3D Interactive WebGL AI Canvas Container -->
+                    <div id="aiCanvasContainer"></div>
+                    <strong id="aiVoiceStatus">Partner: Ready (Friendly Mode)</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);" id="aiSubtext">Click the microphone
+                        to start speaking or type your message below.</span>
+                </div>
+
+                <div class="chat-box" id="chatBox">
+                    <div class="chat-bubble ai">
+                        Hello! I am your English communication and interview practice partner. Let's chat! Click the
+                        microphone button and talk to me, or type your response!
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="userInputText" class="input-control"
+                        placeholder="Type your English response or interview answer here..."
+                        onkeydown="if(event.key==='Enter') sendTextMessage()">
+                    <button class="btn btn-mic" id="micBtn" onclick="toggleSpeechRecognition()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="22" />
+                        </svg>
+                        <span id="micBtnText">Start Mic</span>
+                    </button>
+                    <button class="btn" onclick="sendTextMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Guide & Resources Sub-section -->
+            <div class="guide-section-grid">
+                <div class="guide-card">
+                    <h3>🌐 Official Online Interview & Practice Websites</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Access trusted official web portals
+                        used globally for technical mock interviews, coding assessments, and communication tests.</p>
+                    <ul class="guide-list">
+                        <li><strong>Pramp:</strong> Free peer-to-peer live mock technical and system design interviews.
+                            <a href="https://www.pramp.com" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit Pramp</a>
+                        </li>
+                        <li><strong>LeetCode Mock:</strong> Timed company-specific coding interview simulation
+                            environments. <a href="https://leetcode.com/interview/" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit LeetCode</a></li>
+                        <li><strong>HackerRank Interview Prep:</strong> Curated challenges covering algorithms, data
+                            structures, and SQL. <a href="https://www.hackerrank.com/interview/preparation-kits"
+                                target="_blank" class="social-btn" style="margin-top:4px;">Visit HackerRank</a></li>
+                        <li><strong>Interviewing.io:</strong> Anonymous mock interviews with engineers from FAANG
+                            companies. <a href="https://interviewing.io" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit Interviewing.io</a></li>
+                    </ul>
+                </div>
+
+                <div class="guide-card">
+                    <h3>👔 HR Interview Questions & How to Answer</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Master behavioral rounds with proven
+                        frameworks (STAR method) and strategic answers.</p>
+                    <ul class="guide-list">
+                        <li><strong>"Tell me about yourself":</strong> Structure using Present (current role/studies),
+                            Past (key projects & achievements), and Future (why this role excites you).</li>
+                        <li><strong>"What are your greatest strengths & weaknesses?":</strong> Choose a real
+                            professional strength with an example; mention a genuine weakness and the exact steps you
+                            took to improve it.</li>
+                        <li><strong>"Why should we hire you?":</strong> Connect your unique combination of technical
+                            skills, project background, and passion directly to the company's current business goals.
+                        </li>
+                        <li><strong>How to ask HR questions:</strong> Always ask insightful closing questions such as:
+                            <em>"What does success look like in the first 90 days in this position?"</em> or <em>"Can
+                                you share examples of professional growth paths for team members here?"</em>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="guide-card">
+                    <h3>💬 Group Discussion (GD) Rounds Strategy</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Learn how to lead, communicate
+                        effectively, and stand out positively during group evaluation rounds.</p>
+                    <ul class="guide-list">
+                        <li><strong>Initiating vs. Summarizing:</strong> Initiate if you have a structured framework or
+                            definition ready; otherwise, act as an active listener and deliver a strong concluding
+                            summary.</li>
+                        <li><strong>Body Language & Tone:</strong> Maintain calm eye contact with all participants,
+                            avoid aggressive interruptions, and use polite phrases like: <em>"Building on what [Name]
+                                just mentioned..."</em></li>
+                        <li><strong>Content Quality over Volume:</strong> Focus on structured arguments, facts, and
+                            logical categorization rather than speaking loudly or frequently without substance.</li>
+                        <li><strong>How to handle conflicting opinions:</strong> Acknowledge opposing viewpoints
+                            gracefully: <em>"That is an interesting perspective; however, looking at it from an economic
+                                standpoint..."</em></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- YouTube Video Guides Integration -->
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title" style="font-size: 1.1rem;">📺 Attached Video Masterclasses (Interview, HR &
+                        GD Prep)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Watch curated video
+                        tutorials to perfect your interview body language, HR answers, and GD communication skills.</p>
+                </div>
+                <div class="guide-section-grid" style="margin-top: 12px;">
+                    <div>
+                        <strong style="font-size: 0.88rem; display: block; margin-bottom: 6px;">1. Complete HR Interview
+                            Masterclass</strong>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube-nocookie.com/embed/1mJH20XatHg"
+                                title="HR Interview Questions and Answers"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 0.88rem; display: block; margin-bottom: 6px;">2. Group Discussion (GD)
+                            Tips & Tricks</strong>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube-nocookie.com/embed/W9l1XJWz1LY"
+                                title="Group Discussion Tips"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Career Growth -->
+        <section id="jobs" class="tab-content" role="tabpanel" aria-labelledby="tab-jobs-btn">
+            <div class="card">
+                <div class="card-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h2 class="card-title">🚀 Career Growth & Daily Job Vacancies</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+                            Updated daily with active job/internship openings and student placement highlights complete
+                            with LinkedIn profiles.
+                        </p>
+                    </div>
+                    <span class="chip"
+                        style="background: var(--status-success-bg); color: var(--status-success); border-color: var(--status-success); font-weight: 700;">🟢
+                        Live Daily Feed Updated Today</span>
+                </div>
+                <div class="job-grid" id="jobFeedGrid"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Project Knowledge Engine -->
+        <section id="projects" class="tab-content" role="tabpanel" aria-labelledby="tab-projects-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💡 Project Engine</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Search any hardware or software topic to get a full project blueprint — idea, tools needed,
+                        step-by-step build guide, and a suggested roadmap — plus a history/background summary from
+                        Wikipedia and direct links to Google, AI tools, and GitHub.
+                    </p>
+                </div>
+
+                <div class="search-box">
+                    <select id="projectCategory" class="select-control" aria-label="Query Category"
+                        onchange="updateChips()">
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                    </select>
+                    <input type="text" id="projectQuery" class="input-control"
+                        placeholder="Search any topic to get blueprints, Wikipedia data, and AI/GitHub links..."
+                        aria-label="Project Topic Search" onkeydown="if(event.key==='Enter') searchProjectTopic()">
+                    <button class="btn btn-wiki" onclick="searchProjectTopic()">Search Engine</button>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Suggested Search
+                        Chips:</span>
+                    <div class="quick-chips" id="chipsContainer"></div>
+                </div>
+
+                <div id="blueprintOutput" style="display: none;" class="blueprint-box">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <h3 style="font-size: 1.15rem; color: var(--status-wiki); font-weight: 700;">📐 Project
+                            Blueprint: <span id="blueprintTopicName">--</span></h3>
+                        <span
+                            style="font-size: 0.75rem; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--bg-accent-subtle); color: var(--status-wiki); font-weight: 700;"
+                            id="blueprintDomainBadge">--</span>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">💡 Project Idea</div>
+                        <p id="blueprintIdea" style="font-size: 0.9rem; line-height: 1.6;">--</p>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🛠️ Tools & Components Needed</div>
+                        <div class="tool-tag-row" id="blueprintTools"></div>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🧩 How to Build It — Step by Step</div>
+                        <ul class="blueprint-list" id="blueprintSteps"></ul>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🗺️ Suggested Roadmap</div>
+                        <div id="blueprintRoadmap"></div>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">📋 Key Details & Evaluation Points</div>
+                        <ul class="blueprint-list" id="blueprintDetails"></ul>
+                    </div>
+                </div>
+
+                <div id="wikiOutput" style="display: none;" class="wiki-result-box">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="font-size: 0.95rem; color: var(--text-secondary); font-weight: 700;">📚 Background &
+                            History (Wikipedia)</h3>
+                        <span id="domainBadge"
+                            style="font-size: 0.75rem; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--bg-accent-subtle); color: var(--brand-primary); font-weight: 700;">--</span>
+                    </div>
+                    <h4 id="wikiTitle"
+                        style="font-size: 1.1rem; color: var(--brand-primary); font-weight: 700; margin-top: 6px;">--
+                    </h4>
+
+                    <div id="wikiSnippet" class="wiki-snippet">Fetching deep technical data...</div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">Deep Multi-Platform Search
+                            Connections:</span>
+                            <div class="external-links" id="extLinks"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Biomedical Image & Video AI Scanner -->
+        <section id="biomedical" class="tab-content" role="tabpanel" aria-labelledby="tab-biomedical-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔬 AI Biomedical Image & Video Analyzer</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">
+                        Upload any image or video file (MRI, CT, Ultrasound, Pathology MP4/PNG/JPG). The AI engine scans
+                        frame data, extracts diagnostics, and queries Wikipedia & AI knowledge hubs.
+                    </p>
+                </div>
+
+                <div class="upload-dropzone" onclick="document.getElementById('medicalMediaInput').click()">
+                    <input type="file" id="medicalMediaInput" accept="image/*,video/*" style="display: none;"
+                        onchange="handleMediaUpload(event)">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--status-bio)"
+                        stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p style="font-size: 0.98rem; font-weight: 600; margin-top: 8px;">Click or Drag & Drop Image or
+                        Video File</p>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary);">Supports DICOM, PNG, JPG, MP4, WebM
+                        (Auto Scanning & AI Intelligence Extraction)</p>
+                </div>
+
+                <div class="scan-progress-bar" id="scanProgressBar">
+                    <div class="scan-progress-fill" id="scanProgressFill"></div>
+                </div>
+
+                <div class="analysis-workspace">
+                    <div class="canvas-container">
+                        <canvas id="bioAnalysisCanvas" class="image-canvas" width="500" height="350"></canvas>
+                        <video id="hiddenVideoPlayer" style="display: none;" muted playsinline></video>
+                    </div>
+
+                    <div class="analysis-results-panel">
+                        <h3 id="analysisTitle" style="font-size: 1.05rem; font-weight: 700; color: var(--status-bio);">
+                            Diagnostic Scan Status</h3>
+                        <p id="analysisStatus" style="font-size: 0.85rem; color: var(--text-secondary);">Upload an image
+                            or video to trigger automated vision analysis.</p>
+
+                        <ul class="metric-list" id="metricList">
+                            <li><span>Pipeline Status:</span> <strong>Awaiting Input</strong></li>
+                            <li><span>Detected Class:</span> <strong>N/A</strong></li>
+                            <li><span>Structural Metric:</span> <strong>N/A</strong></li>
+                            <li><span>Confidence Score:</span> <strong>N/A</strong></li>
+                        </ul>
+
+                        <div style="margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-sm btn-bio" onclick="toggleOverlay()">Toggle Segment Mask</button>
+                            <button class="btn btn-sm btn-secondary" onclick="exportAnalysisReport()">Export PDF
+                                Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="aiKnowledgeCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">🤖 Auto-Extracted AI & Wikipedia Intelligence</h2>
+                </div>
+
+                <div class="wiki-result-box" style="margin-top:0;">
+                    <h3 id="autoWikiTitle" style="font-size: 1.1rem; color: var(--status-bio);">Topic Title</h3>
+                    <div id="autoWikiSnippet" class="wiki-snippet">Retrieving research summary...</div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">Extended Biomedical Details &
+                            Clinical Scope:</strong>
+                        <p id="autoAiDetails"
+                            style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">--</p>
+                    </div>
+
+                    <div class="external-links" id="autoExtLinks"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Mind Improvement Level Games & Vowel Quest -->
+        <section id="games" class="tab-content" role="tabpanel" aria-labelledby="tab-games-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🧩 Mind Games & English Vowel Speaking Quest</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Choose from 5 distinct mind games to boost cognition, plus a level-by-level English vowel &
+                        grammar speaking game to advance your pronunciation and word mastery!
+                    </p>
+                </div>
+
+                <!-- Sub-navigation for 5 Mind Games + 1 English Communication Level Game -->
+                <div class="subgame-tab-row">
+                    <button class="subgame-btn active" onclick="switchSubGame('memory', this)">1. Memory Matrix</button>
+                    <button class="subgame-btn" onclick="switchSubGame('speed', this)">2. Speed Match</button>
+                    <button class="subgame-btn" onclick="switchSubGame('pattern', this)">3. Pattern Sequence</button>
+                    <button class="subgame-btn" onclick="switchSubGame('focus', this)">4. Focus Grid</button>
+                    <button class="subgame-btn" onclick="switchSubGame('calc', this)">5. Calculation Dash</button>
+                    <button class="subgame-btn" onclick="switchSubGame('vowel', this)"
+                        style="border-color: var(--status-success); color: var(--status-success);">🌟 English Vowel &
+                        Grammar Level Game</button>
+                </div>
+
+                <!-- Mind Games Container (Games 1 to 5) -->
+                <div id="mindGameContainer" class="game-panel">
+                    <div class="game-stats-row">
+                        <div>Score: <span id="gameScore">0</span></div>
+                        <div>Status: <span id="gameStatusText" style="color: var(--status-game);">Select a game & click
+                                Start</span></div>
+                        <div>High Score: <span id="gameHighScore">0</span></div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <button class="btn btn-game btn-sm" onclick="startCurrentMindGame()">Start / Reset Game</button>
+                    </div>
+                    <div class="game-grid-container" id="gameGridContainer"></div>
+                </div>
+
+                <!-- English Communication Vowel & Grammar Level Game Panel -->
+                <div id="vowelGameContainer" class="grammar-game-box" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <h3 style="color: var(--status-success); font-size: 1.15rem;">🎓 English Vowel & Grammar
+                            Speaking Quest</h3>
+                        <span id="vowelLevelBadge"
+                            style="background: var(--status-success-bg); color: var(--status-success); padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.85rem;">Level
+                            1 of 5</span>
+                    </div>
+
+                    <div class="level-progress-bar">
+                        <div class="level-progress-fill" id="vowelProgressFill" style="width: 20%;"></div>
+                    </div>
+
+                    <div
+                        style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); margin-top: 12px; border: 1px solid var(--border-subtle);">
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;"
+                            id="vowelLevelTitle">Current Vowel Focus: Short 'A' [ae]</p>
+                        <h4 id="vowelTargetWord" style="font-size: 1.4rem; color: var(--brand-primary); margin: 8px 0;">
+                            Word: "Apple"</h4>
+                        <p id="vowelGrammarRule" style="font-size: 0.9rem; margin-bottom: 12px;">Grammar Rule: Use 'An'
+                            before words starting with vowel sounds (A, E, I, O, U).</p>
+
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px;">
+                            <button class="btn btn-sm btn-success" onclick="speakVowelTarget()">🔊 Hear
+                                Pronunciation</button>
+                            <input type="text" id="vowelUserAnswer" class="input-control"
+                                placeholder="Type sentence using this word..." style="max-width: 300px;"
+                                onkeydown="if(event.key==='Enter') submitVowelLevelAnswer()">
+                            <button class="btn btn-sm" onclick="submitVowelLevelAnswer()">Submit Answer &
+                                Advance</button>
+                        </div>
+                        <p id="vowelFeedbackText"
+                            style="font-size: 0.88rem; margin-top: 10px; font-weight: 600; color: var(--status-success);">
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- TAB 6: Protected User Dashboard -->
+            <section id="dashboard" class="tab-content" role="tabpanel" aria-labelledby="tab-dashboard-btn">
+                <div class="card">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h2 class="card-title">🔐 Protected User Dashboard</h2>
+                            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                                End-to-End Encrypted Session View (JWT Bearer Token Authenticated)
+                            </p>
+                        </div>
+                        <span id="dashStatusBadge" class="chip"
+                            style="background: var(--status-success-bg); color: var(--status-success); border-color: var(--status-success); font-weight: 700; font-size: 0.85rem;">
+                            🟢 JWT Session Active
+                        </span>
+                    </div>
+
+                    <div id="dashboardLoggedOutView" style="text-align: center; padding: 40px 20px;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--status-live)"
+                            stroke-width="2" style="margin-bottom: 12px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Access Restricted</h3>
+                        <p
+                            style="font-size: 0.9rem; color: var(--text-secondary); max-width: 450px; margin: 0 auto 20px auto;">
+                            This dashboard is protected by End-to-End Encryption (E2EE) and JWT token validation. Please
+                            sign in or register to access your personal dashboard.
+                        </p>
+                        <button class="btn"
+                            onclick="document.getElementById('auth-modal').classList.remove('hidden')">Sign In /
+                            Register</button>
+                    </div>
+
+                    <div id="dashboardLoggedInView" style="display: none;">
+                        <div class="guide-section-grid" style="margin-top: 0;">
+                            <div class="guide-card">
+                                <h3>👤 User Identity Parameters</h3>
+                                <ul class="metric-list" style="margin-top: 10px;">
+                                    <li><span>Email Address:</span> <strong id="dashEmail">--</strong></li>
+                                    <li><span>Full Name:</span> <strong id="dashName">--</strong></li>
+                                    <li><span>Mobile Number:</span> <strong id="dashMobile">--</strong></li>
+                                    <li><span>Registration Date:</span> <strong id="dashCreated">--</strong></li>
+                                </ul>
+                            </div>
+
+                            <div class="guide-card">
+                                <h3>🛡️ E2EE & JWT Security Specifications</h3>
+                                <ul class="metric-list" style="margin-top: 10px;">
+                                    <li><span>Payload Encryption:</span> <strong id="dashE2ee"
+                                            style="color:var(--status-bio);">AES-256-GCM + RSA-OAEP</strong></li>
+                                    <li><span>Password Security:</span> <strong id="dashHash">bcrypt (10 Salt
+                                            Rounds)</strong></li>
+                                    <li><span>Session Token:</span> <strong id="dashToken"
+                                            style="color:var(--brand-primary);">JWT (24h Expiry)</strong></li>
+                                    <li><span>Public Key Status:</span> <strong id="dashPubKeyStatus"
+                                            style="color:var(--status-success);">Loaded in DB</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 20px; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: 18px;">
+                            <h4 style="font-size: 0.95rem; color: var(--brand-primary); margin-bottom: 8px;">🔑 User RSA
+                                Public Key Fingerprint (PEM)</h4>
+                            <pre id="dashPubKeyDisplay"
+                                style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-sm); overflow-x: auto; white-space: pre-wrap; word-break: break-all;">Generating client keypair...</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+    </div>
+
+
+    <script src="crypto-utils.js"></script>
+    <script src="backend.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
