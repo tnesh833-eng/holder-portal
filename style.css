@@ -1213,3 +1213,170 @@ header .logo svg {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
+
+
+/* Styles for Companies Tab */
+#companies @bottom-left {
+                content: "Top Software Companies Directory 2026 | Comprehensive & Chennai Focused";
+                font-size: 8pt;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #64748b;
+            }
+#companies {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+            background-color: #f8fafc;
+            font-size: 9pt;
+            line-height: 1.35;
+        }
+#companies /* Header Block */
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: #ffffff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+#companies .header h1 {
+            margin: 0 0 6px 0;
+            font-size: 18pt;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+#companies .header p {
+            margin: 0;
+            font-size: 9.5pt;
+            color: #93c5fd;
+            line-height: 1.4;
+        }
+#companies /* Stats & Highlights */
+        .stats-grid {
+            width: 100%;
+            margin-bottom: 14px;
+        }
+#companies .stats-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+        }
+#companies .stat-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            text-align: center;
+        }
+#companies .stat-card .num {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1e40af;
+        }
+#companies .stat-card .label {
+            font-size: 7.5pt;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+#companies /* Section Titles */
+        h2.section-title {
+            font-size: 12pt;
+            color: #0f172a;
+            margin: 14px 0 8px 0;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #2563eb;
+            display: block;
+            page-break-after: avoid;
+        }
+#companies /* Tables */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 14px;
+        }
+#companies table.data-table th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 8.5pt;
+            text-align: left;
+            padding: 7px 8px;
+            border-right: 1px solid #334155;
+        }
+#companies table.data-table th:last-child {
+            border-right: none;
+        }
+#companies table.data-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #f1f5f9;
+            font-size: 8pt;
+            vertical-align: top;
+        }
+#companies table.data-table tr:last-child td {
+            border-bottom: none;
+        }
+#companies table.data-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+#companies /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 7pt;
+            font-weight: 600;
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+#companies .badge-chennai {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+#companies .badge-ai {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+#companies /* Links */
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+#companies a:hover {
+            text-decoration: underline;
+        }
+#companies .link-btn {
+            display: inline-block;
+            padding: 2px 6px;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 3px;
+            font-size: 7.5pt;
+        }
+#companies .link-linkedin {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+#companies /* Footer / Notes */
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 8pt;
+        }
+#companies .info-box p {
+            margin: 0;
+            color: #1e40af;
+        }

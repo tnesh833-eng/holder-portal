@@ -4,7 +4,7 @@
  * Email OTP Verification, and Admin Portal endpoints.
  */
 
-const API_BASE = ""; 
+const API_BASE = "http://localhost:3000";
 
 const Backend = {
   token: localStorage.getItem("jwt_token") || null,
@@ -21,7 +21,7 @@ const Backend = {
   // Helper for requests with Authorization Bearer header
   async _request(url, options = {}) {
     options.credentials = 'include';
-    
+
     options.headers = {
       'Content-Type': 'application/json',
       ...options.headers
@@ -53,37 +53,18 @@ const Backend = {
     }
   },
 
-  // Fetch Server RSA Public Key for Web Crypto E2EE
+  // Fetch Server RSA Public Key for Web Crypto E2EE (Dummy for compatibility)
   async getPublicKey() {
-    const res = await Backend._request(`${API_BASE}/api/auth/public-key`, { method: 'GET' });
-    return res.publicKey;
+    return null;
   },
 
   // Auth Operations
   Auth: {
     // E2EE Encrypted User Registration
     async register(name, email, mobile, password) {
-      const serverPubKey = await Backend.getPublicKey();
-      
-      let userPublicKeyPem = null;
-      try {
-        const clientKeyPair = await E2EE.generateClientKeyPair();
-        userPublicKeyPem = await E2EE.exportPublicKeyPEM(clientKeyPair.publicKey);
-      } catch (e) {
-        console.warn("Client keypair generation skipped:", e);
-      }
-
-      const encryptedPackage = await E2EE.encryptPayload(serverPubKey, {
-        name,
-        email,
-        mobile,
-        password,
-        public_key: userPublicKeyPem
-      });
-
-      const res = await Backend._request(`${API_BASE}/api/register`, {
+      const res = await Backend._request(`${API_BASE}/api/auth/register`, {
         method: 'POST',
-        body: encryptedPackage
+        body: { name, email, mobile, password }
       });
 
       if (res.token) {
@@ -94,9 +75,9 @@ const Backend = {
 
     // Verify 6-digit Email OTP Code
     async verifyEmail(email, code) {
-      const res = await Backend._request(`${API_BASE}/api/verify-email`, {
+      const res = await Backend._request(`${API_BASE}/api/auth/verify-otp`, {
         method: 'POST',
-        body: { email, code }
+        body: { email, otp: code }
       });
       if (res.token) {
         Backend.setToken(res.token);
@@ -114,16 +95,9 @@ const Backend = {
 
     // E2EE Encrypted User Login
     async login(email, password) {
-      const serverPubKey = await Backend.getPublicKey();
-
-      const encryptedPackage = await E2EE.encryptPayload(serverPubKey, {
-        email,
-        password
-      });
-
-      const res = await Backend._request(`${API_BASE}/api/login`, {
+      const res = await Backend._request(`${API_BASE}/api/auth/login`, {
         method: 'POST',
-        body: encryptedPackage
+        body: { email, password }
       });
 
       if (res.token) {
@@ -147,7 +121,7 @@ const Backend = {
 
     async deactivate() {
       const res = await Backend._request(`${API_BASE}/api/auth/deactivate`, {
-        method: 'POST'
+        method: 'DELETE'
       });
       Backend.setToken(null);
       return res;
@@ -207,8 +181,8 @@ const Backend = {
   // Projects Operations
   Projects: {
     async fetchBlueprint(topic, category) {
-      const url = `${API_BASE}/api/projects/blueprint?topic=${encodeURIComponent(topic)}` + 
-                  (category ? `&category=${encodeURIComponent(category)}` : '');
+      const url = `${API_BASE}/api/projects/blueprint?topic=${encodeURIComponent(topic)}` +
+        (category ? `&category=${encodeURIComponent(category)}` : '');
       return Backend._request(url, { method: 'GET' });
     },
 

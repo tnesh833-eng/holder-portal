@@ -1793,3 +1793,260 @@ async function submitVowelLevelAnswer() {
     loadVowelLevel();
   }, 1500);
 }
+\n
+// ==========================================
+// MIND REFRESH GAMES LOGIC
+// ==========================================
+
+// 1. Tic Tac Toe
+let tttBoard = ['', '', '', '', '', '', '', '', ''];
+let tttPlayer = 'X';
+let tttActive = true;
+
+function initTTT() {
+    const board = document.getElementById('ttt-board');
+    if (!board) return;
+    board.innerHTML = '';
+    tttBoard.forEach((cell, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'width: 45px; height: 45px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; border-radius: 4px;';
+        div.textContent = cell;
+        div.onclick = () => playTTT(index, div);
+        board.appendChild(div);
+    });
+}
+
+function playTTT(index, div) {
+    if (tttBoard[index] !== '' || !tttActive) return;
+    tttBoard[index] = tttPlayer;
+    div.textContent = tttPlayer;
+    if (checkTTTWin()) {
+        document.getElementById('ttt-status').textContent = `Player ${tttPlayer} Wins!`;
+        tttActive = false;
+        return;
+    }
+    if (!tttBoard.includes('')) {
+        document.getElementById('ttt-status').textContent = 'Draw!';
+        tttActive = false;
+        return;
+    }
+    tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
+    document.getElementById('ttt-status').textContent = `Your turn (${tttPlayer})`;
+}
+
+function checkTTTWin() {
+    const wins = [
+        [0,1,2], [3,4,5], [6,7,8], // rows
+        [0,3,6], [1,4,7], [2,5,8], // cols
+        [0,4,8], [2,4,6]           // diagonals
+    ];
+    return wins.some(comb => tttBoard[comb[0]] !== '' && tttBoard[comb[0]] === tttBoard[comb[1]] && tttBoard[comb[1]] === tttBoard[comb[2]]);
+}
+
+function resetTTT() {
+    tttBoard = ['', '', '', '', '', '', '', '', ''];
+    tttPlayer = 'X';
+    tttActive = true;
+    document.getElementById('ttt-status').textContent = `Your turn (X)`;
+    initTTT();
+}
+
+// 2. Memory Match
+const memorySymbols = ['🍎', '🍎', '🚀', '🚀', '⭐', '⭐', '🎸', '🎸'];
+let memoryCards = [];
+let memoryFlipped = [];
+let memoryMatched = 0;
+
+function initMemory() {
+    const board = document.getElementById('memory-board');
+    if (!board) return;
+    board.innerHTML = '';
+    memoryCards = [...memorySymbols].sort(() => Math.random() - 0.5);
+    memoryFlipped = [];
+    memoryMatched = 0;
+    document.getElementById('memory-status').textContent = 'Find the matching pairs!';
+    
+    memoryCards.forEach((symbol, index) => {
+        const btn = document.createElement('button');
+        btn.style.cssText = 'width: 45px; height: 45px; font-size: 1.5rem; border: none; border-radius: 4px; cursor: pointer; background: var(--bg-secondary);';
+        btn.dataset.symbol = symbol;
+        btn.dataset.index = index;
+        btn.onclick = () => flipMemory(btn);
+        board.appendChild(btn);
+    });
+}
+
+function flipMemory(btn) {
+    if (memoryFlipped.length === 2 || btn.textContent !== '') return;
+    btn.textContent = btn.dataset.symbol;
+    btn.style.background = 'var(--brand-primary)';
+    memoryFlipped.push(btn);
+    
+    if (memoryFlipped.length === 2) {
+        setTimeout(checkMemoryMatch, 800);
+    }
+}
+
+function checkMemoryMatch() {
+    const [btn1, btn2] = memoryFlipped;
+    if (btn1.dataset.symbol === btn2.dataset.symbol) {
+        memoryMatched += 2;
+        if (memoryMatched === memoryCards.length) {
+            document.getElementById('memory-status').textContent = 'You found them all! 🎉';
+        }
+    } else {
+        btn1.textContent = '';
+        btn1.style.background = 'var(--bg-secondary)';
+        btn2.textContent = '';
+        btn2.style.background = 'var(--bg-secondary)';
+    }
+    memoryFlipped = [];
+}
+
+// 3. Rock Paper Scissors
+function playRPS(playerChoice) {
+    const choices = ['Rock', 'Paper', 'Scissors'];
+    const compChoice = choices[Math.floor(Math.random() * choices.length)];
+    let result = '';
+    
+    if (playerChoice === compChoice) result = "It's a Tie!";
+    else if (
+        (playerChoice === 'Rock' && compChoice === 'Scissors') ||
+        (playerChoice === 'Paper' && compChoice === 'Rock') ||
+        (playerChoice === 'Scissors' && compChoice === 'Paper')
+    ) {
+        result = "You Win! 🎉";
+    } else {
+        result = "You Lose! 😢";
+    }
+    
+    document.getElementById('rps-status').innerHTML = `You: ${playerChoice}<br>Comp: ${compChoice}<br><b>${result}</b>`;
+}
+
+// 4. Guess the Number
+let guessTarget = Math.floor(Math.random() * 100) + 1;
+
+function checkGuess() {
+    const input = document.getElementById('guess-input');
+    const status = document.getElementById('guess-status');
+    const guess = parseInt(input.value);
+    
+    if (isNaN(guess)) {
+        status.textContent = 'Please enter a valid number.';
+        return;
+    }
+    
+    if (guess < guessTarget) status.textContent = 'Too Low! Try a higher number.';
+    else if (guess > guessTarget) status.textContent = 'Too High! Try a lower number.';
+    else status.textContent = 'Correct! 🎉 You guessed it!';
+}
+
+function resetGuess() {
+    guessTarget = Math.floor(Math.random() * 100) + 1;
+    document.getElementById('guess-input').value = '';
+    document.getElementById('guess-status').textContent = 'I have a new number in mind.';
+}
+
+// 5. Word Scramble
+const scrambleWords = ['JAVASCRIPT', 'HTML', 'DEVELOPER', 'SOFTWARE', 'NETWORK', 'SERVER'];
+let currentScramble = '';
+
+function newScramble() {
+    const word = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
+    currentScramble = word;
+    const scrambled = word.split('').sort(() => Math.random() - 0.5).join('');
+    document.getElementById('scramble-word').textContent = scrambled;
+    document.getElementById('scramble-input').value = '';
+    document.getElementById('scramble-status').textContent = '';
+}
+
+function checkScramble() {
+    const input = document.getElementById('scramble-input').value.toUpperCase();
+    const status = document.getElementById('scramble-status');
+    if (input === currentScramble) status.textContent = 'Correct! Great job! 🎉';
+    else status.textContent = 'Incorrect, try again.';
+}
+
+// 6. Math Quiz
+let mathAnswer = 0;
+
+function newMath() {
+    const a = Math.floor(Math.random() * 20) + 1;
+    const b = Math.floor(Math.random() * 20) + 1;
+    const isAdd = Math.random() > 0.5;
+    
+    if (isAdd) {
+        document.getElementById('math-question').textContent = `${a} + ${b} = ?`;
+        mathAnswer = a + b;
+    } else {
+        document.getElementById('math-question').textContent = `${Math.max(a, b)} - ${Math.min(a, b)} = ?`;
+        mathAnswer = Math.max(a, b) - Math.min(a, b);
+    }
+    document.getElementById('math-input').value = '';
+    document.getElementById('math-status').textContent = '';
+}
+
+function checkMath() {
+    const input = parseInt(document.getElementById('math-input').value);
+    const status = document.getElementById('math-status');
+    if (input === mathAnswer) status.textContent = 'Correct! You are a genius! 🎉';
+    else status.textContent = 'Wrong answer, keep trying.';
+}
+
+// 7. Memory Colors (Simon Says Lite)
+let colorSequence = [];
+let playerSequence = [];
+
+function startColors() {
+    colorSequence = [];
+    playerSequence = [];
+    nextColor();
+}
+
+function nextColor() {
+    const colors = ['red', 'blue', 'green', 'yellow'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    colorSequence.push(color);
+    playerSequence = [];
+    
+    document.getElementById('color-status').textContent = 'Watch the sequence...';
+    
+    let delay = 500;
+    colorSequence.forEach((c, index) => {
+        setTimeout(() => {
+            const box = document.getElementById('color-box');
+            box.style.background = c;
+            setTimeout(() => box.style.background = 'grey', 400);
+        }, delay * (index + 1));
+    });
+    
+    setTimeout(() => {
+        document.getElementById('color-status').textContent = 'Your turn! Repeat the sequence.';
+    }, delay * colorSequence.length + 500);
+}
+
+function guessColor(color) {
+    if (colorSequence.length === 0) return;
+    
+    playerSequence.push(color);
+    const box = document.getElementById('color-box');
+    box.style.background = color;
+    setTimeout(() => box.style.background = 'grey', 200);
+    
+    const currentIndex = playerSequence.length - 1;
+    if (playerSequence[currentIndex] !== colorSequence[currentIndex]) {
+        document.getElementById('color-status').textContent = `Wrong! You reached round ${colorSequence.length}. Click Start to try again.`;
+        colorSequence = [];
+    } else if (playerSequence.length === colorSequence.length) {
+        document.getElementById('color-status').textContent = 'Correct! Next round...';
+        setTimeout(nextColor, 1000);
+    }
+}
+
+// Initialize games on load
+document.addEventListener('DOMContentLoaded', () => {
+    initTTT();
+    initMemory();
+    newScramble();
+    newMath();
+});
