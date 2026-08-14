@@ -121,6 +121,17 @@ function initializeDatabase() {
       details TEXT NOT NULL
     );`);
 
+    // 7. Prospects Table (LinkedIn Outreach)
+    db.exec(`CREATE TABLE IF NOT EXISTS prospects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      company TEXT NOT NULL,
+      linkedin TEXT NOT NULL,
+      status TEXT NOT NULL,
+      idea TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`);
+
     // Seed default jobs if empty
     const jobsCount = get(`SELECT COUNT(*) as count FROM jobs`);
     if (!jobsCount || jobsCount.count === 0) {

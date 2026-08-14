@@ -1059,12 +1059,44 @@
 
     <!-- Script to handle LinkedIn Outreach Form interactions -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             const form = document.getElementById('prospectForm');
             const table = document.getElementById('prospectTable');
 
+            function addRowToTable(prospect) {
+                const pitchText = \`Hi \${prospect.name}, thanks for connecting! I'm currently launching a startup that addresses \${prospect.idea}. Given your background at \${prospect.company}, I'd value 5 minutes of your feedback on whether this matches a key pain point in your industry. Open to sharing a quick thought this week?\`;
+
+                const row = document.createElement('tr');
+
+                let statusBadgeClass = 'badge-chennai';
+                if (prospect.status === 'Sent') statusBadgeClass = 'badge-ai';
+                if (prospect.status === 'Replied') statusBadgeClass = 'badge-ai';
+
+                row.innerHTML = \`
+                    <td><strong>\${prospect.name}</strong></td>
+                    <td>\${prospect.company}</td>
+                    <td><a href="\${prospect.linkedin}" target="_blank" rel="noopener" class="link-btn link-linkedin">View Profile</a></td>
+                    <td><span class="badge \${statusBadgeClass}">\${prospect.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="copyPitch(\\\`\${pitchText.replace(/\`/g, '\\\\`')}\\\`)">Copy Pitch</button>
+                    </td>
+                \`;
+
+                table.appendChild(row);
+            }
+
             if (form && table) {
-                form.addEventListener('submit', function (e) {
+                // Load existing prospects
+                try {
+                    const res = await Backend.Prospects.fetchProspects();
+                    if (res && res.prospects) {
+                        res.prospects.forEach(p => addRowToTable(p));
+                    }
+                } catch (e) {
+                    console.error("Failed to load prospects:", e);
+                }
+
+                form.addEventListener('submit', async function (e) {
                     e.preventDefault();
 
                     const name = document.getElementById('name').value;
@@ -1073,26 +1105,15 @@
                     const status = document.getElementById('status').value;
                     const idea = document.getElementById('idea').value;
 
-                    const pitchText = `Hi ${name}, thanks for connecting! I'm currently launching a startup that addresses ${idea}. Given your background at ${company}, I'd value 5 minutes of your feedback on whether this matches a key pain point in your industry. Open to sharing a quick thought this week?`;
+                    const prospectData = { name, company, linkedin, status, idea };
 
-                    const row = document.createElement('tr');
-
-                    let statusBadgeClass = 'badge-chennai';
-                    if (status === 'Sent') statusBadgeClass = 'badge-ai';
-                    if (status === 'Replied') statusBadgeClass = 'badge-ai';
-
-                    row.innerHTML = `
-                        <td><strong>${name}</strong></td>
-                        <td>${company}</td>
-                        <td><a href="${linkedin}" target="_blank" rel="noopener" class="link-btn link-linkedin">View Profile</a></td>
-                        <td><span class="badge ${statusBadgeClass}">${status}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-success" onclick="copyPitch(\`${pitchText.replace(/`/g, '\\`')}\`)">Copy Pitch</button>
-                        </td>
-                    `;
-
-                    table.appendChild(row);
-                    form.reset();
+                    try {
+                        await Backend.Prospects.addProspect(prospectData);
+                        addRowToTable(prospectData);
+                        form.reset();
+                    } catch(err) {
+                        alert("Failed to save prospect to database.");
+                    }
                 });
             }
         });

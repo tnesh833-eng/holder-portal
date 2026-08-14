@@ -138,6 +138,32 @@ app.post('/api/bio/scan', upload.single('mediaFile'), (req, res) => {
 });
 
 // ──────────────────────────────────────────────
+// PROSPECTS API (LinkedIn Outreach)
+// ──────────────────────────────────────────────
+app.get('/api/prospects', (req, res) => {
+    try {
+        const rows = db.all(`SELECT * FROM prospects ORDER BY created_at DESC`);
+        res.status(200).json({ prospects: rows });
+    } catch (err) {
+        res.status(500).json({ message: 'Database error', error: err.message });
+    }
+});
+
+app.post('/api/prospects', (req, res) => {
+    const { name, company, linkedin, status, idea } = req.body;
+    if (!name || !company || !linkedin) return res.status(400).json({ error: 'Missing required fields' });
+    try {
+        const result = db.run(
+            `INSERT INTO prospects (name, company, linkedin, status, idea) VALUES (?, ?, ?, ?, ?)`,
+            [name, company, linkedin, status || 'Pending', idea || '']
+        );
+        res.status(201).json({ success: true, id: result.lastID });
+    } catch (err) {
+        res.status(500).json({ message: 'Database error', error: err.message });
+    }
+});
+
+// ──────────────────────────────────────────────
 // ADMIN: Users list (simplified)
 // ──────────────────────────────────────────────
 app.get('/api/admin/stats', (req, res) => {

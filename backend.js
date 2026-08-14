@@ -232,5 +232,20 @@ const Backend = {
         method: 'GET'
       });
     }
+  },
+
+  // LinkedIn Outreach Prospects
+  Prospects: {
+    async fetchProspects() {
+      return Backend._request(`${API_BASE}/api/prospects`, {
+        method: 'GET'
+      });
+    },
+    async addProspect(prospectData) {
+      return Backend._request(`${API_BASE}/api/prospects`, {
+        method: 'POST',
+        body: prospectData
+      });
+    }
   }
 };
