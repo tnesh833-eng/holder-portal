@@ -219,6 +219,28 @@ const Backend = {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Upload scan failed.");
       return data;
+    },
+    async saveAnalysis(analysisData) {
+      return Backend._request(`${API_BASE}/api/bio/analysis`, {
+        method: 'POST',
+        body: analysisData
+      });
+    },
+    async saveReport(reportData) {
+      return Backend._request(`${API_BASE}/api/bio/report`, {
+        method: 'POST',
+        body: reportData
+      });
+    }
+  },
+
+  // Tools & Integrations
+  Tools: {
+    async logQuery(queryData) {
+      return Backend._request(`${API_BASE}/api/tools/log`, {
+        method: 'POST',
+        body: queryData
+      });
     }
   },
 

@@ -1184,6 +1184,18 @@ async function triggerBioKnowledgeCard(className) {
       <a href="https://scholar.google.com/scholar?q=${encodeURIComponent(className)}" target="_blank" class="social-btn">🔬 Search Google Scholar</a>
     `;
   }
+  
+  // Log the AI Biomedical result into Database
+  try {
+    await Backend.Biomedical.saveAnalysis({
+      image_url: scanData?.filename || 'scanned_image',
+      google_vision_labels: className,
+      wikipedia_results: document.getElementById("autoWikiSnippet").textContent,
+      google_search_results: `https://www.google.com/search?q=${encodeURIComponent(className)}`
+    });
+  } catch (err) {
+    console.warn("Could not save AI integration result to DB", err);
+  }
 
   // Populate bio search links
   const searchStr = encodeURIComponent(className);
@@ -1200,7 +1212,7 @@ async function triggerBioKnowledgeCard(className) {
   }
 }
 
-function exportAnalysisReport() {
+async function exportAnalysisReport() {
   if (!scanData) {
     alert("Please upload and analyze media before exporting a report.");
     return;
@@ -1294,6 +1306,16 @@ function exportAnalysisReport() {
     // Save
     doc.save(`Holder_Medical_Report_${Date.now()}.pdf`);
     
+    // Log the PDF Report export to the database
+    try {
+      await Backend.Biomedical.saveReport({
+        report_title: `Holder_Medical_Report_${Date.now()}`,
+        report_content: `Pathology: ${scanData.detected_class || "N/A"}, Confidence: ${Number(scanData.confidence || 0).toFixed(1)}%`
+      });
+    } catch (err) {
+      console.warn("Could not save PDF report metadata to DB", err);
+    }
+    
   } catch(e) {
       console.error("PDF Export Error:", e);
       alert("Failed to generate PDF. Make sure jsPDF is loaded.");
@@ -1320,6 +1342,13 @@ function closeQuickAccess() {
 function openQASearch() {
   const val = document.getElementById("qaSearchInput").value.trim();
   if (val) {
+    // Log the search to the database
+    Backend.Tools.logQuery({
+      integration_type: 'google_search',
+      query: val,
+      source: 'QuickAccessHub'
+    }).catch(err => console.warn("Failed to log search query:", err));
+    
     window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
   }
 }

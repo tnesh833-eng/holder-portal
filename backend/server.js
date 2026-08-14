@@ -186,6 +186,45 @@ app.post('/api/bio/scan', upload.single('mediaFile'), (req, res) => {
     });
 });
 
+app.post('/api/bio/analysis', (req, res) => {
+    const { image_url, google_vision_labels, wikipedia_results, google_search_results } = req.body;
+    try {
+        const result = db.run(
+            `INSERT INTO biomedical_analyses (image_url, google_vision_labels, wikipedia_results, google_search_results) VALUES (?, ?, ?, ?)`,
+            [image_url || 'uploaded-scan', google_vision_labels || '', wikipedia_results || '', google_search_results || '']
+        );
+        res.status(201).json({ success: true, id: result.lastID });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to save analysis', details: e.message });
+    }
+});
+
+app.post('/api/bio/report', (req, res) => {
+    const { report_title, report_content } = req.body;
+    try {
+        const result = db.run(
+            `INSERT INTO pdf_reports (report_title, report_content) VALUES (?, ?)`,
+            [report_title || 'Medical Report', report_content || '']
+        );
+        res.status(201).json({ success: true, id: result.lastID });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to save report metadata', details: e.message });
+    }
+});
+
+app.post('/api/tools/log', (req, res) => {
+    const { integration_type, query, source } = req.body;
+    try {
+        const result = db.run(
+            `INSERT INTO ai_integration_results (integration_type, query, source) VALUES (?, ?, ?)`,
+            [integration_type || 'search', query || '', source || 'QuickAccessHub']
+        );
+        res.status(201).json({ success: true, id: result.lastID });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to log tool usage', details: e.message });
+    }
+});
+
 // ──────────────────────────────────────────────
 // PROSPECTS API (LinkedIn Outreach)
 // ──────────────────────────────────────────────
