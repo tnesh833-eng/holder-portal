@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holder - English Communication & Career Growth Portal</title>
+    <!-- Three.js Library for 3D AI Assistant Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- jsPDF for PDF report generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://platform.linkedin.com/badges/js/profile.js" async defer></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+      /* Quick Access Tools Panel */
+      .quick-access-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; display:none; align-items:center; justify-content:center; }
+      .quick-access-overlay.open { display:flex; }
+      .quick-access-modal { background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-lg); padding:28px; max-width:800px; width:95%; max-height:88vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.4); }
+      .quick-access-modal h2 { font-size:1.3rem; font-weight:800; margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+      .qa-section { margin-bottom:22px; }
+      .qa-section h3 { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:10px; }
+      .qa-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+      .qa-card { display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 10px; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); text-decoration:none; color:var(--text-primary); font-size:0.82rem; font-weight:600; text-align:center; transition:all .2s; cursor:pointer; }
+      .qa-card:hover { border-color:var(--brand-primary); background:var(--bg-accent); transform:translateY(-2px); }
+      .qa-card .qa-icon { font-size:1.6rem; }
+      .qa-card .qa-cat { font-size:0.68rem; color:var(--text-muted); font-weight:400; }
+      .qa-search-bar { display:flex; gap:8px; margin-bottom:18px; }
+      .qa-search-bar input { flex:1; padding:9px 14px; border-radius:var(--radius-md); border:1px solid var(--border-primary); background:var(--bg-surface); color:var(--text-primary); font-size:0.9rem; }
+      .bio-links-bar { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; padding:12px; background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--border-subtle); }
+    </style>
+</head>
+
+<body>
+    <!-- DYNAMIC ANIMATED BACKGROUND CANVAS & AMBIENT GLOW BLOBS -->
+    <canvas id="bg-animated-canvas"></canvas>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="card-title" style="margin-bottom: 16px;">Account Settings</h2>
+            <div style="text-align: left; margin-bottom: 16px; font-size: 0.9rem;">
+                <p>Name: <span id="set-name" style="font-weight: 600;">Rank Holder</span></p>
+                <p>Email: <span id="set-email" style="font-weight: 600;">gokulsharmila82@gmail.com</span></p>
+                <p>Mobile: <span id="set-mobile" style="font-weight: 600;">+91 8610017559</span></p>
+            </div>
+            <button onclick="deactivateAccount()" class="btn"
+                style="background-color: var(--status-live); width: 100%;">Deactivate Account</button>
+            <button onclick="document.getElementById('settings-modal').classList.add('hidden')"
+                class="btn btn-secondary" style="width: 100%; margin-top: 8px;">Close</button>
+        </div>
+    </div>
+
+    <header>
+        <a href="#" class="logo" aria-label="Holder Home">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            Holder
+        </a>
+        <div class="header-actions">
+            <div class="notif-wrap">
+                <button class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()"
+                    aria-label="Job & Internship Notifications">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-panel-header">
+                        <span>Career Updates</span>
+                        <button class="chip" style="margin:0;" onclick="clearNotifications()">Clear all</button>
+                    </div>
+                    <div id="notifList"></div>
+                </div>
+            </div>
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                <span id="themeIcon">☀️</span> <span id="themeLabel">Light</span>
+            </button>
+            <a href="admin.html" class="chip" style="text-decoration:none;">Admin Panel</a>
+            <button class="btn btn-sm" onclick="openQuickAccess()" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)); color:#fff; font-weight:700; border:none;">🌐 Tools Hub</button>
+            <div id="headerAuthArea"></div>
+        </div>
+    </header>
+
+    <!-- QUICK ACCESS TOOLS MODAL -->
+    <div class="quick-access-overlay" id="quickAccessOverlay" onclick="if(event.target===this)closeQuickAccess()">
+      <div class="quick-access-modal">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h2>🌐 Quick Access Tools Hub</h2>
+          <button onclick="closeQuickAccess()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        </div>
+        <div class="qa-search-bar">
+          <input type="text" id="qaSearchInput" placeholder="Search anything across all platforms..." onkeydown="if(event.key==='Enter') openQASearch()">
+          <button class="btn btn-sm" onclick="openQASearch()">Search All</button>
+        </div>
+        <div class="qa-section">
+          <h3>🔍 Search Engines</h3>
+          <div class="qa-grid" id="qaSearchGrid">
+            <a href="https://www.google.com" target="_blank" class="qa-card"><span class="qa-icon">🔍</span><span>Google</span><span class="qa-cat">Web Search</span></a>
+            <a href="https://lens.google.com" target="_blank" class="qa-card"><span class="qa-icon">📷</span><span>Google Lens</span><span class="qa-cat">Image Search</span></a>
+            <a href="https://en.wikipedia.org" target="_blank" class="qa-card"><span class="qa-icon">📚</span><span>Wikipedia</span><span class="qa-cat">Encyclopedia</span></a>
+            <a href="https://scholar.google.com" target="_blank" class="qa-card"><span class="qa-icon">🎓</span><span>Google Scholar</span><span class="qa-cat">Academic</span></a>
+            <a href="https://stackoverflow.com" target="_blank" class="qa-card"><span class="qa-icon">💬</span><span>Stack Overflow</span><span class="qa-cat">Dev Q&A</span></a>
+            <a href="https://github.com" target="_blank" class="qa-card"><span class="qa-icon">🐙</span><span>GitHub</span><span class="qa-cat">Code</span></a>
+          </div>
+        </div>
+        <div class="qa-section">
+          <h3>🤖 AI Tools</h3>
+          <div class="qa-grid">
+            <a href="https://chat.openai.com" target="_blank" class="qa-card"><span class="qa-icon">🤖</span><span>ChatGPT</span><span class="qa-cat">Text Generation</span></a>
+            <a href="https://gemini.google.com" target="_blank" class="qa-card"><span class="qa-icon">✨</span><span>Google Gemini</span><span class="qa-cat">Text Generation</span></a>
+            <a href="https://claude.ai" target="_blank" class="qa-card"><span class="qa-icon">🧠</span><span>Claude</span><span class="qa-cat">Anthropic AI</span></a>
+            <a href="https://copilot.microsoft.com" target="_blank" class="qa-card"><span class="qa-icon">💻</span><span>MS Copilot</span><span class="qa-cat">Microsoft AI</span></a>
+            <a href="https://www.midjourney.com" target="_blank" class="qa-card"><span class="qa-icon">🖼️</span><span>Midjourney</span><span class="qa-cat">Image AI</span></a>
+            <a href="https://stablediffusionweb.com" target="_blank" class="qa-card"><span class="qa-icon">🌈</span><span>Stable Diffusion</span><span class="qa-cat">Image AI</span></a>
+            <a href="https://runwayml.com" target="_blank" class="qa-card"><span class="qa-icon">🎥</span><span>RunwayML</span><span class="qa-cat">Video AI</span></a>
+            <a href="https://www.perplexity.ai" target="_blank" class="qa-card"><span class="qa-icon">🔮</span><span>Perplexity AI</span><span class="qa-cat">AI Search</span></a>
+            <a href="https://github.com/features/copilot" target="_blank" class="qa-card"><span class="qa-icon">🔧</span><span>GitHub Copilot</span><span class="qa-cat">Code AI</span></a>
+            <a href="https://www.notion.so/product/ai" target="_blank" class="qa-card"><span class="qa-icon">📝</span><span>Notion AI</span><span class="qa-cat">Writing AI</span></a>
+          </div>
+        </div>
+        <div class="qa-section">
+          <h3>💼 Professional & Learning</h3>
+          <div class="qa-grid">
+            <a href="https://www.linkedin.com" target="_blank" class="qa-card"><span class="qa-icon">🔗</span><span>LinkedIn</span><span class="qa-cat">Professional Network</span></a>
+            <a href="https://www.youtube.com" target="_blank" class="qa-card"><span class="qa-icon">▶️</span><span>YouTube</span><span class="qa-cat">Video Learning</span></a>
+            <a href="https://www.coursera.org" target="_blank" class="qa-card"><span class="qa-icon">📖</span><span>Coursera</span><span class="qa-cat">Online Courses</span></a>
+            <a href="https://www.udemy.com" target="_blank" class="qa-card"><span class="qa-icon">🎯</span><span>Udemy</span><span class="qa-cat">Skills Training</span></a>
+            <a href="https://www.kaggle.com" target="_blank" class="qa-card"><span class="qa-icon">📊</span><span>Kaggle</span><span class="qa-cat">Data Science</span></a>
+            <a href="https://leetcode.com" target="_blank" class="qa-card"><span class="qa-icon">⚡</span><span>LeetCode</span><span class="qa-cat">Coding Practice</span></a>
+            <a href="https://www.naukri.com" target="_blank" class="qa-card"><span class="qa-icon">💼</span><span>Naukri</span><span class="qa-cat">India Jobs</span></a>
+            <a href="https://internshala.com" target="_blank" class="qa-card"><span class="qa-icon">🎓</span><span>Internshala</span><span class="qa-cat">Internships</span></a>
+          </div>
+        </div>
+        <div class="qa-section">
+          <h3>🏥 Biomedical & Research</h3>
+          <div class="qa-grid">
+            <a href="https://pubmed.ncbi.nlm.nih.gov" target="_blank" class="qa-card"><span class="qa-icon">🧬</span><span>PubMed</span><span class="qa-cat">Medical Research</span></a>
+            <a href="https://www.ncbi.nlm.nih.gov" target="_blank" class="qa-card"><span class="qa-icon">🔬</span><span>NCBI</span><span class="qa-cat">Biomedical DB</span></a>
+            <a href="https://radiopaedia.org" target="_blank" class="qa-card"><span class="qa-icon">🩻</span><span>Radiopaedia</span><span class="qa-cat">Radiology Cases</span></a>
+            <a href="https://www.kaggle.com/search?q=medical+imaging" target="_blank" class="qa-card"><span class="qa-icon">📷</span><span>Medical Datasets</span><span class="qa-cat">AI Training Data</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+        <nav class="tab-bar" role="tablist" aria-label="Portal Sections">
+            <button class="tab-btn" id="tab-biomedical-btn" role="tab" aria-selected="false" aria-controls="biomedical"
+                onclick="switchTab('biomedical', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Biomedical Vision AI Scanner
+            </button>
+            <button class="tab-btn" id="tab-jobs-btn" role="tab" aria-selected="false" aria-controls="jobs"
+                onclick="switchTab('jobs', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+                Career Growth
+            </button>
+            <button class="tab-btn active" id="tab-english-btn" role="tab" aria-selected="true" aria-controls="english"
+                onclick="switchTab('english', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                </svg>
+                English Communication & Interview Hub
+            </button>
+            <button class="tab-btn" id="tab-games-btn" role="tab" aria-selected="false" aria-controls="refresh-games"
+                onclick="switchTab('refresh-games', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                Mind Refresh Games
+            </button>
+            <button class="tab-btn" id="tab-projects-btn" role="tab" aria-selected="false" aria-controls="projects"
+                onclick="switchTab('projects', this); initProjectEngineTab();">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                Project Engine
+            </button>
+            <button class="tab-btn" id="tab-companies-btn" role="tab" aria-selected="false" aria-controls="companies"
+                onclick="switchTab('companies', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h6M9 13h6M9 17h6" />
+                </svg>
+                Top Software Companies
+            </button>
+            <!-- TAB 7 BUTTON: LinkedIn Startup Outreach -->
+            <button class="tab-btn" id="tab-outreach-btn" role="tab" aria-selected="false" aria-controls="outreach"
+                onclick="switchTab('outreach', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                    <rect x="2" y="9" width="4" height="12" />
+                    <circle cx="4" cy="4" r="2" />
+                </svg>
+                LinkedIn Outreach
+            </button>
+        </nav>
+
+        <!-- TAB 1: English Communication & Interview Hub -->
+        <section id="english" class="tab-content active" role="tabpanel" aria-labelledby="tab-english-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🎙️ English Communication & AI Interview Partner</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Practice spoken English with real-time grammar corrections, explore top official online
+                        interview platforms, master HR questions, learn Group Discussion strategies, and watch
+                        integrated video guides.
+                    </p>
+                </div>
+
+                <div class="ai-mode-bar">
+                    <label for="aiCommModeSelect">Communication Mode:</label>
+                    <select id="aiCommModeSelect" class="select-control" onchange="handleCommModeChange()">
+                        <option value="friendly">Friendly mode</option>
+                        <option value="strictly">Strictly mode</option>
+                        <option value="teaching">Teaching mode</option>
+                    </select>
+
+                    <label for="aiModeSelect" style="margin-left: 12px;">Engine:</label>
+                    <select id="aiModeSelect" class="select-control" onchange="handleAiModeChange()">
+                        <option value="builtin">Built-in Partner</option>
+                        <option value="local">Local Practice Mode</option>
+                        <option value="live">Deploy Mode (API Key)</option>
+                    </select>
+                    <input type="password" id="apiKeyInput" class="input-control api-key-input"
+                        placeholder="Paste your API key" style="display:none;" onchange="saveApiKeyInMemory()"
+                        aria-label="API Key">
+                    <span class="key-note" id="apiKeyNote" style="display:none;">
+                        Your key is kept only in this browser tab's memory for this session.
+                    </span>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statTurns">0</div>
+                        <div class="stat-label">Turns Practiced</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statFixes">0</div>
+                        <div class="stat-label">Corrections Given</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statFluency">100%</div>
+                        <div class="stat-label">Fluency Score</div>
+                    </div>
+                </div>
+
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">Guided Practice &
+                        Interview Topics:</span>
+                    <div class="topic-chip-row" id="topicChipRow"></div>
+                </div>
+
+                <div class="ai-avatar-container">
+                    <!-- 3D Interactive WebGL AI Canvas Container -->
+                    <div id="aiCanvasContainer"></div>
+                    <strong id="aiVoiceStatus">Partner: Ready (Friendly Mode)</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);" id="aiSubtext">Click the microphone
+                        to start speaking or type your message below.</span>
+                </div>
+
+                <div class="chat-box" id="chatBox">
+                    <div class="chat-bubble ai">
+                        Hello! I am your English communication and interview practice partner. Let's chat! Click the
+                        microphone button and talk to me, or type your response!
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="userInputText" class="input-control"
+                        placeholder="Type your English response or interview answer here..."
+                        onkeydown="if(event.key==='Enter') sendTextMessage()" aria-label="User Response">
+                    <button class="btn btn-mic" id="micBtn" onclick="toggleSpeechRecognition()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="22" />
+                        </svg>
+                        <span id="micBtnText">Start Mic</span>
+                    </button>
+                    <button class="btn" onclick="sendTextMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Guide & Resources Sub-section -->
+            <div class="guide-section-grid">
+                <div class="guide-card">
+                    <h3>🌐 Official Online Interview & Practice Websites</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Access trusted official web portals
+                        used globally for technical mock interviews, coding assessments, and communication tests.</p>
+                    <ul class="guide-list">
+                        <li><strong>Pramp:</strong> Free peer-to-peer live mock technical and system design interviews.
+                            <a href="https://www.pramp.com" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit Pramp</a>
+                        </li>
+                        <li><strong>LeetCode Mock:</strong> Timed company-specific coding interview simulation
+                            environments. <a href="https://leetcode.com/interview/" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit LeetCode</a></li>
+                        <li><strong>HackerRank Interview Prep:</strong> Curated challenges covering algorithms, data
+                            structures, and SQL. <a href="https://www.hackerrank.com/interview/preparation-kits"
+                                target="_blank" class="social-btn" style="margin-top:4px;">Visit HackerRank</a></li>
+                        <li><strong>Interviewing.io:</strong> Anonymous mock interviews with engineers from FAANG
+                            companies. <a href="https://interviewing.io" target="_blank" class="social-btn"
+                                style="margin-top:4px;">Visit Interviewing.io</a></li>
+                    </ul>
+                </div>
+
+                <div class="guide-card">
+                    <h3>👔 HR Interview Questions & How to Answer</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Master behavioral rounds with proven
+                        frameworks (STAR method) and strategic answers.</p>
+                    <ul class="guide-list">
+                        <li><strong>"Tell me about yourself":</strong> Structure using Present (current role/studies),
+                            Past (key projects & achievements), and Future (why this role excites you).</li>
+                        <li><strong>"What are your greatest strengths & weaknesses?":</strong> Choose a real
+                            professional strength with an example; mention a genuine weakness and the exact steps you
+                            took to improve it.</li>
+                        <li><strong>"Why should we hire you?":</strong> Connect your unique combination of technical
+                            skills, project background, and passion directly to the company's current business goals.
+                        </li>
+                        <li><strong>How to ask HR questions:</strong> Always ask insightful closing questions such as:
+                            <em>"What does success look like in the first 90 days in this position?"</em> or <em>"Can
+                                you share examples of professional growth paths for team members here?"</em>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="guide-card">
+                    <h3>💬 Group Discussion (GD) Rounds Strategy</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Learn how to lead, communicate
+                        effectively, and stand out positively during group evaluation rounds.</p>
+                    <ul class="guide-list">
+                        <li><strong>Initiating vs. Summarizing:</strong> Initiate if you have a structured framework or
+                            definition ready; otherwise, act as an active listener and deliver a strong concluding
+                            summary.</li>
+                        <li><strong>Body Language & Tone:</strong> Maintain calm eye contact with all participants,
+                            avoid aggressive interruptions, and use polite phrases like: <em>"Building on what [Name]
+                                just mentioned..."</em></li>
+                        <li><strong>Content Quality over Volume:</strong> Focus on structured arguments, facts, and
+                            logical categorization rather than speaking loudly or frequently without substance.</li>
+                        <li><strong>How to handle conflicting opinions:</strong> Acknowledge opposing viewpoints
+                            gracefully: <em>"That is an interesting perspective; however, looking at it from an economic
+                                standpoint..."</em></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- YouTube Video Guides Integration -->
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title" style="font-size: 1.1rem;">📺 Attached Video Masterclasses (Interview, HR &
+                        GD Prep)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Watch curated video
+                        tutorials to perfect your interview body language, HR answers, and GD communication skills.</p>
+                </div>
+                <div class="guide-section-grid" style="margin-top: 12px;">
+                    <div>
+                        <strong style="font-size: 0.88rem; display: block; margin-bottom: 6px;">1. Complete HR Interview
+                            Masterclass</strong>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube-nocookie.com/embed/1mJH20XatHg"
+                                title="HR Interview Questions and Answers"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 0.88rem; display: block; margin-bottom: 6px;">2. Group Discussion (GD)
+                            Tips & Tricks</strong>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube-nocookie.com/embed/W9l1XJWz1LY"
+                                title="Group Discussion Tips"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Career Growth -->
+        <section id="jobs" class="tab-content" role="tabpanel" aria-labelledby="tab-jobs-btn">
+            <div class="card">
+                <div class="card-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h2 class="card-title">🚀 Career Growth & Daily Job Vacancies</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+                            Updated daily with active job/internship openings and student placement highlights complete
+                            with LinkedIn profiles.
+                        </p>
+                    </div>
+                    <span class="chip"
+                        style="background: var(--status-success-bg); color: var(--status-success); border-color: var(--status-success); font-weight: 700;">🟢
+                        Live Daily Feed Updated Today</span>
+                </div>
+                <div class="job-grid" id="jobFeedGrid"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Project Knowledge Engine -->
+        <section id="projects" class="tab-content" role="tabpanel" aria-labelledby="tab-projects-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💡 Project Engine</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Search any hardware or software topic to get a full project blueprint — idea, tools needed,
+                        step-by-step build guide, and a suggested roadmap — plus a history/background summary from
+                        Wikipedia and direct links to Google, AI tools, and GitHub.
+                    </p>
+                </div>
+
+                <div class="search-box">
+                    <select id="projectCategory" class="select-control" aria-label="Query Category"
+                        onchange="updateChips()">
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                    </select>
+                    <input type="text" id="projectQuery" class="input-control"
+                        placeholder="Search any topic to get blueprints, Wikipedia data, and AI/GitHub links..."
+                        aria-label="Project Topic Search" onkeydown="if(event.key==='Enter') searchProjectTopic()">
+                    <button class="btn btn-wiki" onclick="searchProjectTopic()">Search Engine</button>
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Suggested Search
+                        Chips:</span>
+                    <div class="quick-chips" id="chipsContainer"></div>
+                </div>
+
+                <div id="blueprintOutput" style="display: none;" class="blueprint-box">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <h3 style="font-size: 1.15rem; color: var(--status-wiki); font-weight: 700;">📐 Project
+                            Blueprint: <span id="blueprintTopicName">--</span></h3>
+                        <span
+                            style="font-size: 0.75rem; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--bg-accent-subtle); color: var(--status-wiki); font-weight: 700;"
+                            id="blueprintDomainBadge">--</span>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">💡 Project Idea</div>
+                        <p id="blueprintIdea" style="font-size: 0.9rem; line-height: 1.6;">--</p>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🛠️ Tools & Components Needed</div>
+                        <div class="tool-tag-row" id="blueprintTools"></div>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🧩 How to Build It — Step by Step</div>
+                        <ul class="blueprint-list" id="blueprintSteps"></ul>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">🗺️ Suggested Roadmap</div>
+                        <div id="blueprintRoadmap"></div>
+                    </div>
+
+                    <div class="blueprint-section">
+                        <div class="blueprint-heading">📋 Key Details & Evaluation Points</div>
+                        <ul class="blueprint-list" id="blueprintDetails"></ul>
+                    </div>
+                </div>
+
+                <div id="wikiOutput" style="display: none;" class="wiki-result-box">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="font-size: 0.95rem; color: var(--text-secondary); font-weight: 700;">📚 Background &
+                            History (Wikipedia)</h3>
+                        <span id="domainBadge"
+                            style="font-size: 0.75rem; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--bg-accent-subtle); color: var(--brand-primary); font-weight: 700;">--</span>
+                    </div>
+                    <h4 id="wikiTitle"
+                        style="font-size: 1.1rem; color: var(--brand-primary); font-weight: 700; margin-top: 6px;">--
+                    </h4>
+
+                    <div id="wikiSnippet" class="wiki-snippet">Fetching deep technical data...</div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">🧠 Complete Technical
+                            Breakdown:</strong>
+                        <ul class="blueprint-list" id="techDetails"></ul>
+                    </div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">💻 Recommended Coding Languages
+                            & Tools:</strong>
+                        <div id="codingTools" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+                    </div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">🤖 AI Tools & Assistants for
+                            This Project:</strong>
+                        <div id="aiToolsList"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 8px;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">🔗 Deep Multi-Platform Search
+                            Connections:</strong>
+                        <div class="external-links" id="extLinks"></div>
+                    </div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 12px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">📊 Company Hiring &
+                            Resources:</strong>
+                        <div id="companyLinks"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 8px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Company Update Notifications -->
+                <div
+                    style="margin-top: 20px; padding: 12px; background: var(--bg-accent-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="font-size: 0.95rem; color: var(--brand-primary);">🔔 Daily Company Updates &
+                                Opportunities</strong>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Subscribe to
+                                get daily job openings, internship alerts, and company announcements</p>
+                        </div>
+                        <button class="btn btn-sm" onclick="enableCompanyNotifications()"
+                            style="white-space: nowrap;">Enable Alerts</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Biomedical Image & Video AI Scanner -->
+        <section id="biomedical" class="tab-content" role="tabpanel" aria-labelledby="tab-biomedical-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔬 AI Biomedical Image & Video Analyzer</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">
+                        Upload any image or video file (MRI, CT, Ultrasound, Pathology MP4/PNG/JPG). The AI engine scans
+                        frame data, extracts diagnostics, and queries Wikipedia & AI knowledge hubs.
+                    </p>
+                </div>
+
+                <div class="upload-dropzone" onclick="document.getElementById('medicalMediaInput').click()">
+                    <input type="file" id="medicalMediaInput" accept="image/*,video/*" style="display: none;"
+                        onchange="handleMediaUpload(event)">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--status-bio)"
+                        stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p style="font-size: 0.98rem; font-weight: 600; margin-top: 8px;">Click or Drag & Drop Image or
+                        Video File</p>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary);">Supports DICOM, PNG, JPG, MP4, WebM
+                        (Auto Scanning & AI Intelligence Extraction)</p>
+                </div>
+
+                <div class="scan-progress-bar" id="scanProgressBar">
+                    <div class="scan-progress-fill" id="scanProgressFill"></div>
+                </div>
+
+                <div class="analysis-workspace">
+                    <div class="canvas-container">
+                        <canvas id="bioAnalysisCanvas" class="image-canvas" width="500" height="350"></canvas>
+                        <video id="hiddenVideoPlayer" style="display: none;" muted playsinline></video>
+                    </div>
+
+                    <div class="analysis-results-panel">
+                        <h3 id="analysisTitle" style="font-size: 1.05rem; font-weight: 700; color: var(--status-bio);">
+                            Diagnostic Scan Status</h3>
+                        <p id="analysisStatus" style="font-size: 0.85rem; color: var(--text-secondary);">Upload an image
+                            or video to trigger automated vision analysis.</p>
+
+                        <ul class="metric-list" id="metricList">
+                            <li><span>Pipeline Status:</span> <strong>Awaiting Input</strong></li>
+                            <li><span>Detected Class:</span> <strong>N/A</strong></li>
+                            <li><span>Structural Metric:</span> <strong>N/A</strong></li>
+                            <li><span>Confidence Score:</span> <strong>N/A</strong></li>
+                        </ul>
+
+                        <div style="margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-sm btn-bio" onclick="toggleOverlay()">Toggle Segment Mask</button>
+                            <button class="btn btn-sm btn-secondary" onclick="exportAnalysisReport()">⬇️ Export PDF Report</button>
+                        </div>
+
+                        <!-- Bio external search links (shown after scan) -->
+                        <div class="bio-links-bar" id="bioSearchLinks" style="display:none;">
+                            <strong style="width:100%;font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Research More</strong>
+                            <a id="bioGoogleLensLink" href="https://lens.google.com" target="_blank" class="social-btn">📷 Google Lens</a>
+                            <a id="bioGoogleLink" href="#" target="_blank" class="social-btn">🔍 Google Search</a>
+                            <a id="bioWikiLink" href="#" target="_blank" class="social-btn">📚 Wikipedia</a>
+                            <a id="bioPubMedLink" href="#" target="_blank" class="social-btn">🧬 PubMed</a>
+                            <a id="bioScholarLink" href="#" target="_blank" class="social-btn">🎓 Google Scholar</a>
+                            <a id="bioYoutubeLink" href="#" target="_blank" class="social-btn">▶️ YouTube Tutorials</a>
+                            <a id="bioChatGPTLink" href="https://chat.openai.com" target="_blank" class="social-btn">🤖 Ask ChatGPT</a>
+                            <a id="bioGeminiLink" href="https://gemini.google.com" target="_blank" class="social-btn">✨ Ask Gemini</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="aiKnowledgeCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">🤖 Auto-Extracted AI & Wikipedia Intelligence</h2>
+                </div>
+
+                <div class="wiki-result-box" style="margin-top:0;">
+                    <h3 id="autoWikiTitle" style="font-size: 1.1rem; color: var(--status-bio);">Topic Title</h3>
+                    <div id="autoWikiSnippet" class="wiki-snippet">Retrieving research summary...</div>
+
+                    <div style="margin-top: 14px; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                        <strong style="font-size: 0.88rem; color: var(--text-primary);">Extended Biomedical Details &
+                            Clinical Scope:</strong>
+                        <p id="autoAiDetails"
+                            style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">--</p>
+                    </div>
+
+                    <div class="external-links" id="autoExtLinks"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Mind Improvement Level Games & Vowel Quest -->
+        <section id="games" class="tab-content" role="tabpanel" aria-labelledby="tab-games-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🧩 Mind Games & English Vowel Speaking Quest</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Choose from 5 distinct mind games to boost cognition, plus a level-by-level English vowel &
+                        grammar speaking game to advance your pronunciation and word mastery!
+                    </p>
+                </div>
+
+                <!-- Sub-navigation for 5 Mind Games + 1 English Communication Level Game -->
+                <div class="subgame-tab-row">
+                    <button class="subgame-btn active" onclick="switchSubGame('memory', this)">1. Memory Matrix</button>
+                    <button class="subgame-btn" onclick="switchSubGame('speed', this)">2. Speed Match</button>
+                    <button class="subgame-btn" onclick="switchSubGame('pattern', this)">3. Pattern Sequence</button>
+                    <button class="subgame-btn" onclick="switchSubGame('focus', this)">4. Focus Grid</button>
+                    <button class="subgame-btn" onclick="switchSubGame('calc', this)">5. Calculation Dash</button>
+                    <button class="subgame-btn" onclick="switchSubGame('vowel', this)"
+                        style="border-color: var(--status-success); color: var(--status-success);">🌟 English Vowel &
+                        Grammar Level Game</button>
+                </div>
+
+                <!-- Mind Games Container (Games 1 to 5) -->
+                <div id="mindGameContainer" class="game-panel">
+                    <div class="game-stats-row">
+                        <div>Score: <span id="gameScore">0</span></div>
+                        <div>Status: <span id="gameStatusText" style="color: var(--status-game);">Select a game & click
+                                Start</span></div>
+                        <div>High Score: <span id="gameHighScore">0</span></div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <button class="btn btn-game btn-sm" onclick="startCurrentMindGame()">Start / Reset Game</button>
+                    </div>
+                    <div class="game-grid-container" id="gameGridContainer"></div>
+                </div>
+
+                <!-- English Communication Vowel & Grammar Level Game Panel -->
+                <div id="vowelGameContainer" class="grammar-game-box" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <h3 style="color: var(--status-success); font-size: 1.15rem;">🎓 English Vowel & Grammar
+                            Speaking Quest</h3>
+                        <span id="vowelLevelBadge"
+                            style="background: var(--status-success-bg); color: var(--status-success); padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.85rem;">Level
+                            1 of 5</span>
+                    </div>
+
+                    <div class="level-progress-bar">
+                        <div class="level-progress-fill" id="vowelProgressFill" style="width: 20%;"></div>
+                    </div>
+
+                    <div
+                        style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); margin-top: 12px; border: 1px solid var(--border-subtle);">
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;"
+                            id="vowelLevelTitle">Current Vowel Focus: Short 'A' [ae]</p>
+                        <h4 id="vowelTargetWord" style="font-size: 1.4rem; color: var(--brand-primary); margin: 8px 0;">
+                            Word: "Apple"</h4>
+                        <p id="vowelGrammarRule" style="font-size: 0.9rem; margin-bottom: 12px;">Grammar Rule: Use 'An'
+                            before words starting with vowel sounds (A, E, I, O, U).</p>
+
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px;">
+                            <button class="btn btn-sm btn-success" onclick="speakVowelTarget()">🔊 Hear
+                                Pronunciation</button>
+                            <input type="text" id="vowelUserAnswer" class="input-control"
+                                placeholder="Type sentence using this word..." style="max-width: 300px;"
+                                onkeydown="if(event.key==='Enter') submitVowelLevelAnswer()"
+                                aria-label="Sentence Input">
+                            <button class="btn btn-sm" onclick="submitVowelLevelAnswer()">Submit Answer &
+                                Advance</button>
+                        </div>
+                        <p id="vowelFeedbackText"
+                            style="font-size: 0.88rem; margin-top: 10px; font-weight: 600; color: var(--status-success);">
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: Mind Refresh Games -->
+        <section id="refresh-games" class="tab-content" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🎮 Mind Refresh Games</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Take a break and sharpen your mind with these 6 quick games.
+                    </p>
+                </div>
+                <div class="games-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
+
+                    <!-- Game 1: Tic Tac Toe -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Tic Tac Toe</h3>
+                        <div id="ttt-board"
+                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 150px; margin: 10px auto;">
+                            <!-- Cells generated by JS -->
+                        </div>
+                        <p id="ttt-status" style="margin-bottom:10px;">Your turn (X)</p>
+                        <button class="btn btn-sm" onclick="resetTTT()">Reset</button>
+                    </div>
+
+                    <!-- Game 2: Memory Match -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Memory Match</h3>
+                        <div id="memory-board"
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 200px; margin: 10px auto;">
+                            <!-- Cards generated by JS -->
+                        </div>
+                        <p id="memory-status" style="margin-bottom:10px;">Find the matching pairs!</p>
+                        <button class="btn btn-sm" onclick="initMemory()">Restart</button>
+                    </div>
+
+                    <!-- Game 3: Rock Paper Scissors -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Rock Paper Scissors</h3>
+                        <div style="margin: 15px 0;">
+                            <button class="btn btn-sm" onclick="playRPS('Rock')">🪨</button>
+                            <button class="btn btn-sm" onclick="playRPS('Paper')">📄</button>
+                            <button class="btn btn-sm" onclick="playRPS('Scissors')">✂️</button>
+                        </div>
+                        <p id="rps-status">Choose your move!</p>
+                    </div>
+
+                    <!-- Game 4: Guess the Number -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Guess the Number (1-100)</h3>
+                        <input type="number" id="guess-input" class="input-field"
+                            style="width: 100px; margin-bottom:10px;" placeholder="1-100" aria-label="Number Guess">
+                        <button class="btn btn-sm" onclick="checkGuess()">Guess</button>
+                        <p id="guess-status" style="margin-top:10px;">I have a number in mind.</p>
+                        <button class="btn btn-sm btn-secondary" style="margin-top:10px;" onclick="resetGuess()">New
+                            Number</button>
+                    </div>
+
+                    <!-- Game 5: Word Scramble -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Word Scramble</h3>
+                        <h2 id="scramble-word" style="letter-spacing: 3px; margin: 10px 0;">...</h2>
+                        <input type="text" id="scramble-input" class="input-field"
+                            style="width: 150px; margin-bottom:10px;" placeholder="Your answer" aria-label="Word Input">
+                        <button class="btn btn-sm" onclick="checkScramble()">Check</button>
+                        <p id="scramble-status" style="margin-top:10px;"></p>
+                        <button class="btn btn-sm btn-secondary" style="margin-top:10px;" onclick="newScramble()">Next
+                            Word</button>
+                    </div>
+
+                    <!-- Game 6: Math Quiz -->
+                    <div class="game-card"
+                        style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border-primary); text-align: center;">
+                        <h3>Math Quiz</h3>
+                        <h2 id="math-question" style="margin: 10px 0;">...</h2>
+                        <input type="number" id="math-input" class="input-field"
+                            style="width: 100px; margin-bottom:10px;" placeholder="Answer" aria-label="Math Answer">
+                        <button class="btn btn-sm" onclick="checkMath()">Submit</button>
+                        <p id="math-status" style="margin-top:10px;"></p>
+                        <button class="btn btn-sm btn-secondary" style="margin-top:10px;" onclick="newMath()">Next
+                            Question</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 7: Companies -->
+        <section id="companies" class="tab-content" role="tabpanel" aria-labelledby="tab-companies-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🏢 Top Software Companies Directory</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Explore the directory of top software companies, IT hubs, and internship links.
+                    </p>
+                </div>
+                <div style="padding: 16px;">
+                    <!-- Header Section -->
+                    <div class="header">
+                        <h1>Directory of Top Software & Tech Companies (2026)</h1>
+                        <p>Comprehensive Alphabetical Directory featuring Official Websites, Careers & Internship Hubs,
+                            LinkedIn Profiles, AI/Product Giants, and Specialized GUVI-Featured Chennai IT Parks &
+                            Corporate Locations.</p>
+                    </div>
+
+                    <!-- Quick Stats Summary -->
+                    <div class="stats-grid">
+                        <div class="stats-row" style="display: flex; gap: 10px; width: 100%;">
+                            <div class="stat-card" style="flex: 1;">
+                                <div class="num">100+</div>
+                                <div class="label">Top Software Companies</div>
+                            </div>
+                            <div class="stat-card" style="flex: 1;">
+                                <div class="num">AI & Tech Giants</div>
+                                <div class="label">Google, Microsoft, Nvidia, OpenAI</div>
+                            </div>
+                            <div class="stat-card" style="flex: 1;">
+                                <div class="num">Chennai Focus</div>
+                                <div class="label">GUVI Blog Top 14 IT Hubs</div>
+                            </div>
+                            <div class="stat-card" style="flex: 1;">
+                                <div class="num">Student Pathways</div>
+                                <div class="label">Direct Internship Links</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 15px;">
+                        <p><strong>Directory Key & Verification:</strong> All links point to official corporate domains
+                            and primary careers/internship portals. Regional hubs highlight primary presence in key
+                            Indian technology clusters including Chennai (Tidel Park, OMR, Guindy DLF, Ramanujan IT
+                            City), Bengaluru, Hyderabad, Pune, and Delhi NCR.</p>
+                    </div>
+
+                    <!-- Section 1: GUVI Blog Top Chennai IT Companies -->
+                    <h2 class="section-title">1. Featured IT Companies in Chennai (Source: GUVI Blog)</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 4%;">#</th>
+                                <th style="width: 16%;">Company Name</th>
+                                <th style="width: 22%;">Chennai Campus Location & Area</th>
+                                <th style="width: 14%;">Fresher Salary Range</th>
+                                <th style="width: 14%;">Official Website</th>
+                                <th style="width: 15%;">Internship / Career Portal</th>
+                                <th style="width: 15%;">LinkedIn Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>Tata Consultancy Services (TCS)</strong> <span
+                                        class="badge badge-chennai">Tidel Park</span></td>
+                                <td>Canal Bank Rd, Tidel Park, Tharamani, Chennai</td>
+                                <td>₹3.5 – ₹4.5 LPA</td>
+                                <td><a href="https://www.tcs.com/" target="_blank">tcs.com</a></td>
+                                <td><a href="https://www.tcs.com/careers" class="link-btn" target="_blank">TCS
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/tata-consultancy-services"
+                                        class="link-btn link-linkedin" target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>Infosys</strong> <span class="badge badge-chennai">OMR</span></td>
+                                <td>138, Old Mahabalipuram Road, Sholinganallur, Chennai</td>
+                                <td>₹3.6 – ₹5.0 LPA</td>
+                                <td><a href="https://www.infosys.com/" target="_blank">infosys.com</a></td>
+                                <td><a href="https://www.infosys.com/careers/" class="link-btn" target="_blank">InfyTQ /
+                                        Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/infosys" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><strong>Cognizant (CTS)</strong> <span class="badge badge-chennai">Elcot SEZ</span>
+                                </td>
+                                <td>SEZ Ave, Elcot SEZ, Sholinganallur, Chennai</td>
+                                <td>₹3.5 – ₹4.8 LPA</td>
+                                <td><a href="https://www.cognizant.com/" target="_blank">cognizant.com</a></td>
+                                <td><a href="https://www.cognizant.com/in/en/careers" class="link-btn"
+                                        target="_blank">GenC Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/cognizant" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>Amazon India / AWS</strong> <span class="badge badge-chennai">Guindy
+                                        WTC</span></td>
+                                <td>World Trade Centre, Perungudi / Guindy, Chennai</td>
+                                <td>₹4.0 LPA (Ops) / SDE Higher</td>
+                                <td><a href="https://www.amazon.in/" target="_blank">amazon.in</a></td>
+                                <td><a href="https://www.amazon.jobs/en/locations/chennai-india" class="link-btn"
+                                        target="_blank">Amazon Student</a></td>
+                                <td><a href="https://www.linkedin.com/company/amazon" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><strong>HCLTech</strong> <span class="badge badge-chennai">Navalur</span></td>
+                                <td>ETA Techno Park, SEZ 33, Navalur, Chennai</td>
+                                <td>₹3.5 LPA + TechBee</td>
+                                <td><a href="https://www.hcltech.com/" target="_blank">hcltech.com</a></td>
+                                <td><a href="https://www.hcltech.com/careers/early-careers" class="link-btn"
+                                        target="_blank">HCL Early Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/hcltech" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><strong>Wipro</strong> <span class="badge badge-chennai">OMR</span></td>
+                                <td>CDC 5, Sholinganallur, Chennai</td>
+                                <td>₹3.2 – ₹3.5 LPA</td>
+                                <td><a href="https://www.wipro.com/" target="_blank">wipro.com</a></td>
+                                <td><a href="https://www.wipro.com/careers/" class="link-btn" target="_blank">Wipro
+                                        Elite NTH</a></td>
+                                <td><a href="https://www.linkedin.com/company/wipro" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td><strong>Capgemini</strong> <span class="badge badge-chennai">DLF Guindy</span></td>
+                                <td>DLF IT Park, Mount Poonamallee Rd, Manapakkam, Chennai</td>
+                                <td>₹4.0 LPA</td>
+                                <td><a href="https://www.capgemini.com/in-en/" target="_blank">capgemini.com</a></td>
+                                <td><a href="https://www.capgemini.com/in-en/careers/students-and-graduates/"
+                                        class="link-btn" target="_blank">Capgemini Freshers</a></td>
+                                <td><a href="https://www.linkedin.com/company/capgemini" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><strong>IBM India</strong> <span class="badge badge-chennai">DLF Guindy</span></td>
+                                <td>DLF IT Park, Block 7, Porur / Manapakkam, Chennai</td>
+                                <td>₹5.0 LPA</td>
+                                <td><a href="https://www.ibm.com/in-en" target="_blank">ibm.com</a></td>
+                                <td><a href="https://www.ibm.com/in-en/employment/entrylevel/" class="link-btn"
+                                        target="_blank">IBM Early Level</a></td>
+                                <td><a href="https://www.linkedin.com/company/ibm" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td><strong>Tech Mahindra</strong> <span class="badge badge-chennai">OMR</span></td>
+                                <td>602/3, Elcot SEZ, Sholinganallur, Chennai</td>
+                                <td>₹3.6 LPA</td>
+                                <td><a href="https://www.techmahindra.com/" target="_blank">techmahindra.com</a></td>
+                                <td><a href="https://careers.techmahindra.com/" class="link-btn" target="_blank">TechM
+                                        Early Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/tech-mahindra"
+                                        class="link-btn link-linkedin" target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td><strong>DXC Technology</strong> <span class="badge badge-chennai">Ramanujan
+                                        City</span></td>
+                                <td>Ramanujan IT City, Rajiv Gandhi Salai, Taramani, Chennai</td>
+                                <td>₹4.0 LPA</td>
+                                <td><a href="https://dxc.com/in/en" target="_blank">dxc.com</a></td>
+                                <td><a href="https://dxc.com/in/en/careers" class="link-btn" target="_blank">DXC
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/dxc-technology"
+                                        class="link-btn link-linkedin" target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td><strong>Accenture India</strong> <span class="badge badge-chennai">DLF Guindy</span>
+                                </td>
+                                <td>DLF IT Park, Mount Poonamallee Road, Guindy, Chennai</td>
+                                <td>₹4.5 LPA</td>
+                                <td><a href="https://www.accenture.com/in-en" target="_blank">accenture.com</a></td>
+                                <td><a href="https://www.accenture.com/in-en/careers" class="link-btn"
+                                        target="_blank">Accenture Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/accenture" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td><strong>Zoho Corporation</strong> <span class="badge badge-chennai">Estancia
+                                        OMR</span></td>
+                                <td>Estancia IT Park, Guduvanchery / Tenkasi / Chennai</td>
+                                <td>₹5.5 – ₹8.0 LPA</td>
+                                <td><a href="https://www.zoho.com/" target="_blank">zoho.com</a></td>
+                                <td><a href="https://www.zoho.com/careers/" class="link-btn" target="_blank">Zoho
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/zoho" class="link-btn link-linkedin"
+                                        target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td><strong>LTIMindtree</strong> <span class="badge badge-chennai">DLF Guindy</span>
+                                </td>
+                                <td>DLF Cybercity, Manapakkam, Chennai</td>
+                                <td>₹4.2 LPA</td>
+                                <td><a href="https://www.ltimindtree.com/" target="_blank">ltimindtree.com</a></td>
+                                <td><a href="https://www.ltimindtree.com/careers/" class="link-btn"
+                                        target="_blank">LTIMindtree Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/ltimindtree"
+                                        class="link-btn link-linkedin" target="_blank">LinkedIn</a></td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td><strong>Adrenalin eSystems</strong> <span
+                                        class="badge badge-chennai">Perungudi</span></td>
+                                <td>Prince Info City II, OMR, Perungudi, Chennai</td>
+                                <td>₹3.5 LPA</td>
+                                <td><a href="https://www.myadrenalin.com/" target="_blank">myadrenalin.com</a></td>
+                                <td><a href="https://www.myadrenalin.com/careers/" class="link-btn"
+                                        target="_blank">Adrenalin Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/adrenalin-esystems-limited"
+                                        class="link-btn link-linkedin" target="_blank">LinkedIn</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Section 2: Comprehensive Alphabetical Software Company Directory (100+) -->
+                    <h2 class="section-title">2. Master Alphabetical Software Directory (100+ Top Companies & AI Giants)
+                    </h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 4%;">#</th>
+                                <th style="width: 18%;">Company Name</th>
+                                <th style="width: 18%;">Primary State & Tech Hubs</th>
+                                <th style="width: 18%;">Official Website</th>
+                                <th style="width: 21%;">Internship / Student Link</th>
+                                <th style="width: 21%;">LinkedIn Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- A -->
+                            <tr>
+                                <td>15</td>
+                                <td><strong>Accenture</strong></td>
+                                <td>KA, TG, MH, TN, HR</td>
+                                <td><a href="https://www.accenture.com/in-en">accenture.com</a></td>
+                                <td><a href="https://www.accenture.com/in-en/careers" class="link-btn">Accenture
+                                        Internships</a></td>
+                                <td><a href="https://www.linkedin.com/company/accenture"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>16</td>
+                                <td><strong>Adobe India</strong> <span class="badge badge-ai">AI Leader</span></td>
+                                <td>UP (Noida), KA (Bengaluru)</td>
+                                <td><a href="https://www.adobe.com/in/">adobe.com</a></td>
+                                <td><a href="https://www.adobe.com/careers/university.html" class="link-btn">Adobe
+                                        University</a></td>
+                                <td><a href="https://www.linkedin.com/company/adobe"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td><strong>AMD India</strong></td>
+                                <td>KA (Bengaluru), TG (Hyderabad)</td>
+                                <td><a href="https://www.amd.com/en.html">amd.com</a></td>
+                                <td><a href="https://www.amd.com/en/corporate/careers/university-relations.html"
+                                        class="link-btn">AMD University</a></td>
+                                <td><a href="https://www.linkedin.com/company/amd"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td><strong>Amdocs India</strong></td>
+                                <td>MH (Pune), HR (Gurugram)</td>
+                                <td><a href="https://www.amdocs.com/">amdocs.com</a></td>
+                                <td><a href="https://www.amdocs.com/careers" class="link-btn">Amdocs Early Career</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/amdocs"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td><strong>Amazon India</strong></td>
+                                <td>KA, TG, TN (Chennai)</td>
+                                <td><a href="https://www.amazon.jobs/en/locations/india">amazon.jobs</a></td>
+                                <td><a href="https://www.amazon.jobs/en/business_categories/student-programs"
+                                        class="link-btn">Amazon Students</a></td>
+                                <td><a href="https://www.linkedin.com/company/amazon"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td><strong>Anthropic</strong> <span class="badge badge-ai">GenAI</span></td>
+                                <td>Global / Remote (India R&D)</td>
+                                <td><a href="https://www.anthropic.com/">anthropic.com</a></td>
+                                <td><a href="https://www.anthropic.com/careers" class="link-btn">Anthropic Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/anthropic-ai"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>21</td>
+                                <td><strong>AppDynamics (Cisco)</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.appdynamics.com/">appdynamics.com</a></td>
+                                <td><a href="https://jobs.cisco.com/" class="link-btn">Cisco University</a></td>
+                                <td><a href="https://www.linkedin.com/company/appdynamics"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td><strong>Atlassian India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.atlassian.com/">atlassian.com</a></td>
+                                <td><a href="https://www.atlassian.com/company/careers/students"
+                                        class="link-btn">Atlassian Graduates</a></td>
+                                <td><a href="https://www.linkedin.com/company/atlassian"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- B -->
+                            <tr>
+                                <td>23</td>
+                                <td><strong>Birlasoft</strong></td>
+                                <td>UP (Noida), MH (Pune), KA</td>
+                                <td><a href="https://www.birlasoft.com/">birlasoft.com</a></td>
+                                <td><a href="https://www.birlasoft.com/careers" class="link-btn">Birlasoft Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/birlasoft"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>24</td>
+                                <td><strong>Bosch Global Software (BGSW)</strong></td>
+                                <td>KA (Bengaluru), TN (Coimbatore)</td>
+                                <td><a href="https://www.bosch-softwaretechnology.com/en/">bosch-software.com</a></td>
+                                <td><a href="https://www.bosch-softwaretechnology.com/en/careers/"
+                                        class="link-btn">Bosch Early Talent</a></td>
+                                <td><a href="https://www.linkedin.com/company/bosch-global-software-technologies"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>25</td>
+                                <td><strong>Broadcom India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.broadcom.com/">broadcom.com</a></td>
+                                <td><a href="https://www.broadcom.com/company/careers" class="link-btn">Broadcom
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/broadcom"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- C -->
+                            <tr>
+                                <td>26</td>
+                                <td><strong>Cadence Design Systems</strong></td>
+                                <td>KA (Bengaluru), UP (Noida)</td>
+                                <td><a href="https://www.cadence.com/">cadence.com</a></td>
+                                <td><a href="https://www.cadence.com/en_US/home/company/careers/students-and-graduates.html"
+                                        class="link-btn">Cadence University</a></td>
+                                <td><a href="https://www.linkedin.com/company/cadence-design-systems"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>27</td>
+                                <td><strong>Capgemini India</strong></td>
+                                <td>MH, KA, TG, TN (Chennai)</td>
+                                <td><a href="https://www.capgemini.com/in-en/">capgemini.com</a></td>
+                                <td><a href="https://www.capgemini.com/in-en/careers/students-and-graduates/"
+                                        class="link-btn">Capgemini Freshers</a></td>
+                                <td><a href="https://www.linkedin.com/company/capgemini"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>28</td>
+                                <td><strong>Caterpillar India Tech</strong></td>
+                                <td>TN (Chennai), KA (Bengaluru)</td>
+                                <td><a href="https://www.caterpillar.com/en/careers.html">caterpillar.com</a></td>
+                                <td><a href="https://www.caterpillar.com/en/careers/students-and-graduates.html"
+                                        class="link-btn">Caterpillar Students</a></td>
+                                <td><a href="https://www.linkedin.com/company/caterpillar-inc"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>29</td>
+                                <td><strong>Cisco Systems India</strong></td>
+                                <td>KA (Bengaluru), TN (Chennai)</td>
+                                <td><a href="https://www.cisco.com/site/in/en/index.html">cisco.com</a></td>
+                                <td><a href="https://jobs.cisco.com/main/content/Students-and-Graduates"
+                                        class="link-btn">Cisco Internships</a></td>
+                                <td><a href="https://www.linkedin.com/company/cisco"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>30</td>
+                                <td><strong>Cognizant (CTS)</strong></td>
+                                <td>TN, TG, WB, MH, KA</td>
+                                <td><a href="https://www.cognizant.com/in/en">cognizant.com</a></td>
+                                <td><a href="https://www.cognizant.com/in/en/careers" class="link-btn">Cognizant
+                                        GenC</a></td>
+                                <td><a href="https://www.linkedin.com/company/cognizant"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>31</td>
+                                <td><strong>Cohesity India</strong></td>
+                                <td>KA (Bengaluru), MH (Pune)</td>
+                                <td><a href="https://www.cohesity.com/">cohesity.com</a></td>
+                                <td><a href="https://www.cohesity.com/company/careers/" class="link-btn">Cohesity
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/cohesity"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>32</td>
+                                <td><strong>Commvault India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.commvault.com/">commvault.com</a></td>
+                                <td><a href="https://www.commvault.com/careers" class="link-btn">Commvault Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/commvault"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>33</td>
+                                <td><strong>Cyient</strong></td>
+                                <td>TG (Hyderabad), AP, KA</td>
+                                <td><a href="https://www.cyient.com/">cyient.com</a></td>
+                                <td><a href="https://www.cyient.com/careers" class="link-btn">Cyient Early Career</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/cyient"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- D -->
+                            <tr>
+                                <td>34</td>
+                                <td><strong>Databricks India</strong> <span class="badge badge-ai">Data & AI</span></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.databricks.com/">databricks.com</a></td>
+                                <td><a href="https://www.databricks.com/company/careers/university-recruiting"
+                                        class="link-btn">Databricks University</a></td>
+                                <td><a href="https://www.linkedin.com/company/databricks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>35</td>
+                                <td><strong>Dell Technologies</strong></td>
+                                <td>KA (Bengaluru), TG (Hyderabad)</td>
+                                <td><a href="https://www.dell.com/en-in">dell.com</a></td>
+                                <td><a href="https://jobs.dell.com/students" class="link-btn">Dell Student Hub</a></td>
+                                <td><a href="https://www.linkedin.com/company/delltechnologies"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>36</td>
+                                <td><strong>Deloitte USI</strong></td>
+                                <td>TG, KA, MH, HR, TN</td>
+                                <td><a href="https://www2.deloitte.com/ui/en.html">deloitte.com</a></td>
+                                <td><a href="https://www2.deloitte.com/ui/en/careers/students.html"
+                                        class="link-btn">Deloitte Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/deloitte"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>37</td>
+                                <td><strong>DXC Technology</strong></td>
+                                <td>KA, TN (Chennai), TG, MH</td>
+                                <td><a href="https://dxc.com/in/en">dxc.com</a></td>
+                                <td><a href="https://dxc.com/in/en/careers" class="link-btn">DXC Early Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/dxc-technology"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- E -->
+                            <tr>
+                                <td>38</td>
+                                <td><strong>EPAM Systems India</strong></td>
+                                <td>TG (Hyderabad), HR, KA</td>
+                                <td><a href="https://www.epam.com/">epam.com</a></td>
+                                <td><a href="https://training.epam.com/" class="link-btn">EPAM Training Portal</a></td>
+                                <td><a href="https://www.linkedin.com/company/epam-systems"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>39</td>
+                                <td><strong>EY GDS (Ernst & Young)</strong></td>
+                                <td>KA (Bengaluru), KL (Kochi), HR</td>
+                                <td><a href="https://www.ey.com/en_in">ey.com</a></td>
+                                <td><a href="https://www.ey.com/en_in/careers/students" class="link-btn">EY Campus
+                                        Program</a></td>
+                                <td><a href="https://www.linkedin.com/company/ernstandyoung"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- F -->
+                            <tr>
+                                <td>40</td>
+                                <td><strong>F5 Networks India</strong></td>
+                                <td>TG (Hyderabad), KA (Bengaluru)</td>
+                                <td><a href="https://www.f5.com/">f5.com</a></td>
+                                <td><a href="https://www.f5.com/company/careers" class="link-btn">F5 Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/f5"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>41</td>
+                                <td><strong>Fidelity Investments</strong></td>
+                                <td>KA (Bengaluru), TN (Chennai)</td>
+                                <td><a href="https://www.fidelity.co.in/">fidelity.co.in</a></td>
+                                <td><a href="https://jobs.fidelity.com/students/" class="link-btn">Fidelity Students</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/fidelity-investments"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>42</td>
+                                <td><strong>Freshworks</strong></td>
+                                <td>TN (Chennai), KA (Bengaluru)</td>
+                                <td><a href="https://www.freshworks.com/">freshworks.com</a></td>
+                                <td><a href="https://www.freshworks.com/company/careers/" class="link-btn">Freshworks
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/freshworks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- G -->
+                            <tr>
+                                <td>43</td>
+                                <td><strong>GlobalLogic (Hitachi)</strong></td>
+                                <td>UP (Noida), HR, KA, TG</td>
+                                <td><a href="https://www.globallogic.com/in/">globallogic.com</a></td>
+                                <td><a href="https://www.globallogic.com/in/careers/" class="link-btn">GlobalLogic
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/globallogic"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>44</td>
+                                <td><strong>Google India</strong> <span class="badge badge-ai">AI Giant</span></td>
+                                <td>KA (Bengaluru), TG, HR, MH</td>
+                                <td><a href="https://about.google/">google.com</a></td>
+                                <td><a href="https://careers.google.com/students/" class="link-btn">Google STEP
+                                        Internship</a></td>
+                                <td><a href="https://www.linkedin.com/company/google"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- H -->
+                            <tr>
+                                <td>45</td>
+                                <td><strong>Happiest Minds Tech</strong></td>
+                                <td>KA (Bengaluru), UP (Noida)</td>
+                                <td><a href="https://www.happiestminds.com/">happiestminds.com</a></td>
+                                <td><a href="https://www.happiestminds.com/careers/" class="link-btn">Happiest Minds
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/happiest-minds-technologies"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>46</td>
+                                <td><strong>HCLTech</strong></td>
+                                <td>UP (Noida), TN (Chennai), WB</td>
+                                <td><a href="https://www.hcltech.com/">hcltech.com</a></td>
+                                <td><a href="https://www.hcltech.com/careers/early-careers" class="link-btn">HCL TechBee
+                                        / Freshers</a></td>
+                                <td><a href="https://www.linkedin.com/company/hcltech"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>47</td>
+                                <td><strong>Hexaware Technologies</strong></td>
+                                <td>MH (Navi Mumbai), TN, MH</td>
+                                <td><a href="https://hexaware.com/">hexaware.com</a></td>
+                                <td><a href="https://hexaware.com/careers/" class="link-btn">Hexaware Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/hexaware-technologies"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- I -->
+                            <tr>
+                                <td>48</td>
+                                <td><strong>IBM India</strong></td>
+                                <td>KA, TG, KL (Kochi), MH, TN</td>
+                                <td><a href="https://www.ibm.com/in-en">ibm.com</a></td>
+                                <td><a href="https://www.ibm.com/in-en/employment/entrylevel/" class="link-btn">IBM
+                                        Entry Level</a></td>
+                                <td><a href="https://www.linkedin.com/company/ibm"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>49</td>
+                                <td><strong>IBS Software</strong></td>
+                                <td>KL (Thiruvananthapuram, Kochi)</td>
+                                <td><a href="https://www.ibsplc.com/">ibsplc.com</a></td>
+                                <td><a href="https://www.ibsplc.com/careers" class="link-btn">IBS Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/ibs-software-services"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>50</td>
+                                <td><strong>Informatica India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.informatica.com/in/">informatica.com</a></td>
+                                <td><a href="https://www.informatica.com/about-us/careers.html"
+                                        class="link-btn">Informatica Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/informatica"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>51</td>
+                                <td><strong>Infosys</strong></td>
+                                <td>KA, MH, TG, TN, HR, WB</td>
+                                <td><a href="https://www.infosys.com/">infosys.com</a></td>
+                                <td><a href="https://www.infosys.com/careers/" class="link-btn">InfyTQ / Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/infosys"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>52</td>
+                                <td><strong>Intel India</strong></td>
+                                <td>KA (Bengaluru), TG (Hyderabad)</td>
+                                <td><a href="https://www.intel.in/">intel.in</a></td>
+                                <td><a href="https://www.intel.com/content/www/us/en/jobs/students-and-graduates.html"
+                                        class="link-btn">Intel Students Program</a></td>
+                                <td><a href="https://www.linkedin.com/company/intel-corporation"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>53</td>
+                                <td><strong>Intuit India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.intuit.com/">intuit.com</a></td>
+                                <td><a href="https://www.intuit.com/careers/programs/internships/"
+                                        class="link-btn">Intuit Internships</a></td>
+                                <td><a href="https://www.linkedin.com/company/intuit"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- J -->
+                            <tr>
+                                <td>54</td>
+                                <td><strong>JPMorgan Chase Tech</strong></td>
+                                <td>KA (Bengaluru), TG, MH</td>
+                                <td><a href="https://www.jpmorganchase.com/">jpmorganchase.com</a></td>
+                                <td><a href="https://careers.jpmorgan.com/us/en/students/programs" class="link-btn">JPMC
+                                        Software Intern</a></td>
+                                <td><a href="https://www.linkedin.com/company/jpmorganchase"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>55</td>
+                                <td><strong>Juniper Networks</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.juniper.net/in/en.html">juniper.net</a></td>
+                                <td><a href="https://www.juniper.net/us/en/company/careers/university.html"
+                                        class="link-btn">Juniper University</a></td>
+                                <td><a href="https://www.linkedin.com/company/juniper-networks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- K -->
+                            <tr>
+                                <td>56</td>
+                                <td><strong>KPIT Technologies</strong></td>
+                                <td>MH (Pune), KA (Bengaluru)</td>
+                                <td><a href="https://www.kpit.com/">kpit.com</a></td>
+                                <td><a href="https://www.kpit.com/careers/" class="link-btn">KPIT Spark Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/kpit"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- L -->
+                            <tr>
+                                <td>57</td>
+                                <td><strong>LTIMindtree</strong></td>
+                                <td>MH, KA, TN (Chennai), TG</td>
+                                <td><a href="https://www.ltimindtree.com/">ltimindtree.com</a></td>
+                                <td><a href="https://www.ltimindtree.com/careers/" class="link-btn">LTIMindtree
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/ltimindtree"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- M -->
+                            <tr>
+                                <td>58</td>
+                                <td><strong>Mastercard India Tech</strong></td>
+                                <td>MH (Pune), HR (Gurugram)</td>
+                                <td><a href="https://www.mastercard.in/">mastercard.in</a></td>
+                                <td><a href="https://careers.mastercard.com/us/en/students-and-graduates"
+                                        class="link-btn">Mastercard Students</a></td>
+                                <td><a href="https://www.linkedin.com/company/mastercard"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>59</td>
+                                <td><strong>MathWorks India</strong></td>
+                                <td>KA (Bengaluru), TG (Hyderabad)</td>
+                                <td><a href="https://www.mathworks.com/">mathworks.com</a></td>
+                                <td><a href="https://www.mathworks.com/company/jobs/students.html"
+                                        class="link-btn">MathWorks Students</a></td>
+                                <td><a href="https://www.linkedin.com/company/mathworks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>60</td>
+                                <td><strong>Meta India (Facebook)</strong> <span class="badge badge-ai">AI Leader</span>
+                                </td>
+                                <td>TG, HR (Gurugram), KA</td>
+                                <td><a href="https://about.meta.com/">meta.com</a></td>
+                                <td><a href="https://www.metacareers.com/students-and-grads/" class="link-btn">Meta
+                                        University</a></td>
+                                <td><a href="https://www.linkedin.com/company/meta"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>61</td>
+                                <td><strong>Micro Focus (OpenText)</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.opentext.com/">opentext.com</a></td>
+                                <td><a href="https://www.opentext.com/about/careers" class="link-btn">OpenText
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/opentext"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>62</td>
+                                <td><strong>Microsoft India</strong> <span class="badge badge-ai">AI Leader</span></td>
+                                <td>TG (Hyderabad), KA, UP</td>
+                                <td><a href="https://www.microsoft.com/en-in">microsoft.com</a></td>
+                                <td><a href="https://careers.microsoft.com/students/us/en" class="link-btn">Microsoft
+                                        University</a></td>
+                                <td><a href="https://www.linkedin.com/company/microsoft"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>63</td>
+                                <td><strong>Mphasis</strong></td>
+                                <td>KA (Bengaluru), TN, MH</td>
+                                <td><a href="https://www.mphasis.com/">mphasis.com</a></td>
+                                <td><a href="https://www.mphasis.com/home/careers.html" class="link-btn">Mphasis Early
+                                        Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/mphasis"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>64</td>
+                                <td><strong>Mu Sigma</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.mu-sigma.com/">mu-sigma.com</a></td>
+                                <td><a href="https://www.mu-sigma.com/careers" class="link-btn">Mu Sigma Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/mu-sigma-inc"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- N -->
+                            <tr>
+                                <td>65</td>
+                                <td><strong>Nagarro</strong></td>
+                                <td>HR (Gurugram), RJ (Jaipur)</td>
+                                <td><a href="https://www.nagarro.com/en">nagarro.com</a></td>
+                                <td><a href="https://www.nagarro.com/en/careers" class="link-btn">Nagarro Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/nagarro"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>66</td>
+                                <td><strong>NEC Corporation India</strong></td>
+                                <td>UP (Noida), KA (Bengaluru)</td>
+                                <td><a href="https://in.nec.com/">in.nec.com</a></td>
+                                <td><a href="https://in.nec.com/en_IN/careers/index.html" class="link-btn">NEC
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/nec-corporation-india"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>67</td>
+                                <td><strong>NetApp India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.netapp.com/in/">netapp.com</a></td>
+                                <td><a href="https://www.netapp.com/company/careers/university/" class="link-btn">NetApp
+                                        University</a></td>
+                                <td><a href="https://www.linkedin.com/company/netapp"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>68</td>
+                                <td><strong>NVIDIA India</strong> <span class="badge badge-ai">AI Leader</span></td>
+                                <td>KA, MH (Pune), TG</td>
+                                <td><a href="https://www.nvidia.com/en-in/">nvidia.com</a></td>
+                                <td><a href="https://www.nvidia.com/en-us/about-nvidia/careers/university-recruiting/"
+                                        class="link-btn">Nvidia University</a></td>
+                                <td><a href="https://www.linkedin.com/company/nvidia"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- O -->
+                            <tr>
+                                <td>69</td>
+                                <td><strong>OpenAI</strong> <span class="badge badge-ai">GenAI Leader</span></td>
+                                <td>Global / India Remote Hubs</td>
+                                <td><a href="https://openai.com/">openai.com</a></td>
+                                <td><a href="https://openai.com/careers" class="link-btn">OpenAI Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/openai"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>70</td>
+                                <td><strong>Optum (UnitedHealth)</strong></td>
+                                <td>TG (Hyderabad), HR, KA</td>
+                                <td><a href="https://www.optum.in/">optum.in</a></td>
+                                <td><a href="https://www.optum.in/careers.html" class="link-btn">Optum Early Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/optum"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>71</td>
+                                <td><strong>Oracle India</strong></td>
+                                <td>KA (Bengaluru), TG, MH, UP</td>
+                                <td><a href="https://www.oracle.com/in/">oracle.com</a></td>
+                                <td><a href="https://www.oracle.com/careers/students-graduates/" class="link-btn">Oracle
+                                        Student Hub</a></td>
+                                <td><a href="https://www.linkedin.com/company/oracle"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- P -->
+                            <tr>
+                                <td>72</td>
+                                <td><strong>Palo Alto Networks</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.paloaltonetworks.com/">paloaltonetworks.com</a></td>
+                                <td><a href="https://www.paloaltonetworks.com/about-us/careers/early-in-career"
+                                        class="link-btn">Early Career Hub</a></td>
+                                <td><a href="https://www.linkedin.com/company/palo-alto-networks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>73</td>
+                                <td><strong>Paytm (One97)</strong></td>
+                                <td>UP (Noida), KA (Bengaluru)</td>
+                                <td><a href="https://paytm.com/">paytm.com</a></td>
+                                <td><a href="https://paytm.com/careers" class="link-btn">Paytm Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/paytm"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>74</td>
+                                <td><strong>Persistent Systems</strong></td>
+                                <td>MH (Pune, Nagpur), KA, GA</td>
+                                <td><a href="https://www.persistent.com/">persistent.com</a></td>
+                                <td><a href="https://www.persistent.com/careers/" class="link-btn">Persistent Campus</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/persistent-systems"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>75</td>
+                                <td><strong>PhonePe</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.phonepe.com/">phonepe.com</a></td>
+                                <td><a href="https://www.phonepe.com/careers/" class="link-btn">PhonePe Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/phonepe-internet-private-limited"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>76</td>
+                                <td><strong>PwC India SDC</strong></td>
+                                <td>WB (Kolkata), KA, TG</td>
+                                <td><a href="https://www.pwc.in/">pwc.in</a></td>
+                                <td><a href="https://www.pwc.in/careers.html" class="link-btn">PwC Campus Hiring</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/pwc"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- Q -->
+                            <tr>
+                                <td>77</td>
+                                <td><strong>Qualcomm India</strong></td>
+                                <td>TG (Hyderabad), KA, TN</td>
+                                <td><a href="https://www.qualcomm.com/">qualcomm.com</a></td>
+                                <td><a href="https://www.qualcomm.com/company/careers/students"
+                                        class="link-btn">Qualcomm Interns</a></td>
+                                <td><a href="https://www.linkedin.com/company/qualcomm"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>78</td>
+                                <td><strong>Quick Heal Tech</strong></td>
+                                <td>MH (Pune)</td>
+                                <td><a href="https://www.quickheal.co.in/">quickheal.co.in</a></td>
+                                <td><a href="https://www.quickheal.co.in/careers" class="link-btn">Quick Heal
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/quickheal"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- R -->
+                            <tr>
+                                <td>79</td>
+                                <td><strong>Red Hat India</strong></td>
+                                <td>MH (Pune), KA (Bengaluru)</td>
+                                <td><a href="https://www.redhat.com/en">redhat.com</a></td>
+                                <td><a href="https://www.redhat.com/en/jobs/students-and-graduates" class="link-btn">Red
+                                        Hat University</a></td>
+                                <td><a href="https://www.linkedin.com/company/red-hat"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>80</td>
+                                <td><strong>Rippling India</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.rippling.com/">rippling.com</a></td>
+                                <td><a href="https://www.rippling.com/careers" class="link-btn">Rippling Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/rippling"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- S -->
+                            <tr>
+                                <td>81</td>
+                                <td><strong>Salesforce India</strong></td>
+                                <td>TG (Hyderabad), KA, HR</td>
+                                <td><a href="https://www.salesforce.com/in/">salesforce.com</a></td>
+                                <td><a href="https://www.salesforce.com/company/careers/university-recruiting/"
+                                        class="link-btn">Futureforce Interns</a></td>
+                                <td><a href="https://www.linkedin.com/company/salesforce"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>82</td>
+                                <td><strong>Samsung R&D Institute</strong></td>
+                                <td>KA (Bengaluru), UP (Noida)</td>
+                                <td><a href="https://www.samsung.com/in/">samsung.com</a></td>
+                                <td><a href="https://www.samsung.com/in/aboutsamsung/careers/careers/"
+                                        class="link-btn">Samsung Campus</a></td>
+                                <td><a href="https://www.linkedin.com/company/samsung-electronics"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>83</td>
+                                <td><strong>SAP Labs India</strong></td>
+                                <td>KA (Bengaluru), HR, MH</td>
+                                <td><a href="https://www.sap.com/india/index.html">sap.com</a></td>
+                                <td><a href="https://jobs.sap.com/go/SAP-Students-and-Graduates/8172001/"
+                                        class="link-btn">SAP Student Hub</a></td>
+                                <td><a href="https://www.linkedin.com/company/sap"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>84</td>
+                                <td><strong>ServiceNow India</strong></td>
+                                <td>TG (Hyderabad), KA</td>
+                                <td><a href="https://www.servicenow.com/">servicenow.com</a></td>
+                                <td><a href="https://www.servicenow.com/company/careers/early-career.html"
+                                        class="link-btn">ServiceNow Early Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/servicenow"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>85</td>
+                                <td><strong>Siemens EDA</strong></td>
+                                <td>KA (Bengaluru), MH (Noida)</td>
+                                <td><a href="https://eda.sw.siemens.com/en-US/">siemens.com</a></td>
+                                <td><a href="https://www.sw.siemens.com/en-US/careers/students/"
+                                        class="link-btn">Siemens Students</a></td>
+                                <td><a href="https://www.linkedin.com/company/siemens-eda"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>86</td>
+                                <td><strong>Snowflake India</strong> <span class="badge badge-ai">Data Platform</span>
+                                </td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.snowflake.com/en/">snowflake.com</a></td>
+                                <td><a href="https://www.snowflake.com/en/company/careers/university-recruiting/"
+                                        class="link-btn">Snowflake University</a></td>
+                                <td><a href="https://www.linkedin.com/company/snowflake-computing"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>87</td>
+                                <td><strong>Splunk (Cisco)</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.splunk.com/">splunk.com</a></td>
+                                <td><a href="https://www.splunk.com/en_us/careers/university-recruiting.html"
+                                        class="link-btn">Splunk University</a></td>
+                                <td><a href="https://www.linkedin.com/company/splunk"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>88</td>
+                                <td><strong>Synopsys India</strong></td>
+                                <td>KA (Bengaluru), TG, MH</td>
+                                <td><a href="https://www.synopsys.com/">synopsys.com</a></td>
+                                <td><a href="https://www.synopsys.com/company/careers/university-programs.html"
+                                        class="link-btn">Synopsys University</a></td>
+                                <td><a href="https://www.linkedin.com/company/synopsys-inc"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- T -->
+                            <tr>
+                                <td>89</td>
+                                <td><strong>Tata Consultancy Services (TCS)</strong></td>
+                                <td>MH, TN, TG, WB, KA</td>
+                                <td><a href="https://www.tcs.com/">tcs.com</a></td>
+                                <td><a href="https://www.tcs.com/careers" class="link-btn">TCS NQT / Internship</a></td>
+                                <td><a href="https://www.linkedin.com/company/tata-consultancy-services"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>90</td>
+                                <td><strong>Tata Elxsi</strong></td>
+                                <td>KA (Bengaluru), KL, TN</td>
+                                <td><a href="https://www.tataelxsi.com/">tataelxsi.com</a></td>
+                                <td><a href="https://www.tataelxsi.com/careers" class="link-btn">Tata Elxsi Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/tata-elxsi"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>91</td>
+                                <td><strong>Tech Mahindra</strong></td>
+                                <td>MH (Pune), TG, UP, KA</td>
+                                <td><a href="https://www.techmahindra.com/">techmahindra.com</a></td>
+                                <td><a href="https://careers.techmahindra.com/" class="link-btn">TechM Early Career</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/tech-mahindra"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>92</td>
+                                <td><strong>Thoughtworks India</strong></td>
+                                <td>KA, MH, TN (Coimbatore, Chennai)</td>
+                                <td><a href="https://www.thoughtworks.com/en-in">thoughtworks.com</a></td>
+                                <td><a href="https://www.thoughtworks.com/en-in/careers" class="link-btn">Thoughtworks
+                                        Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/thoughtworks"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- U -->
+                            <tr>
+                                <td>93</td>
+                                <td><strong>Uber India R&D</strong></td>
+                                <td>KA (Bengaluru), TG (Hyderabad)</td>
+                                <td><a href="https://www.uber.com/in/en/">uber.com</a></td>
+                                <td><a href="https://www.uber.com/us/en/careers/university/" class="link-btn">Uber
+                                        University Program</a></td>
+                                <td><a href="https://www.linkedin.com/company/uber-com"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>94</td>
+                                <td><strong>UiPath India</strong> <span class="badge badge-ai">RPA / AI</span></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.uipath.com/">uipath.com</a></td>
+                                <td><a href="https://www.uipath.com/company/careers" class="link-btn">UiPath Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/uipath"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>95</td>
+                                <td><strong>UST</strong></td>
+                                <td>KL (Thiruvananthapuram), KA</td>
+                                <td><a href="https://www.ust.com/">ust.com</a></td>
+                                <td><a href="https://www.ust.com/en/careers" class="link-btn">UST Early Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/ustglobal"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- V -->
+                            <tr>
+                                <td>96</td>
+                                <td><strong>ValueLabs</strong></td>
+                                <td>TG (Hyderabad)</td>
+                                <td><a href="https://www.valuelabs.com/">valuelabs.com</a></td>
+                                <td><a href="https://www.valuelabs.com/careers/" class="link-btn">ValueLabs Careers</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/valuelabs"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>97</td>
+                                <td><strong>VMware (Broadcom)</strong></td>
+                                <td>KA (Bengaluru)</td>
+                                <td><a href="https://www.vmware.com/in.html">vmware.com</a></td>
+                                <td><a href="https://careers.vmware.com/university" class="link-btn">VMware
+                                        University</a></td>
+                                <td><a href="https://www.linkedin.com/company/vmware"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- W -->
+                            <tr>
+                                <td>98</td>
+                                <td><strong>Wells Fargo India Tech</strong></td>
+                                <td>TG (Hyderabad), KA (Bengaluru)</td>
+                                <td><a href="https://www.wellsfargo.com/">wellsfargo.com</a></td>
+                                <td><a href="https://www.wellsfargojobs.com/en/early-careers/" class="link-btn">Wells
+                                        Fargo Early Career</a></td>
+                                <td><a href="https://www.linkedin.com/company/wellsfargo"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>99</td>
+                                <td><strong>Wipro</strong></td>
+                                <td>KA, TN, TG, MH, WB</td>
+                                <td><a href="https://www.wipro.com/">wipro.com</a></td>
+                                <td><a href="https://www.wipro.com/careers/" class="link-btn">Wipro Elite NTH / WILP</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/wipro"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+
+                            <!-- Z -->
+                            <tr>
+                                <td>100</td>
+                                <td><strong>Zensar Technologies</strong></td>
+                                <td>MH (Pune), KA (Bengaluru)</td>
+                                <td><a href="https://www.zensar.com/">zensar.com</a></td>
+                                <td><a href="https://www.zensar.com/careers" class="link-btn">Zensar Careers</a></td>
+                                <td><a href="https://www.linkedin.com/company/zensar-technologies"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>101</td>
+                                <td><strong>Zoho Corporation</strong></td>
+                                <td>TN (Chennai, Tenkasi), KA</td>
+                                <td><a href="https://www.zoho.com/">zoho.com</a></td>
+                                <td><a href="https://www.zoho.com/careers/" class="link-btn">Zoho Careers / Schools</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/zoho"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td>102</td>
+                                <td><strong>Zscaler India</strong></td>
+                                <td>KA (Bengaluru), MH (Pune)</td>
+                                <td><a href="https://www.zscaler.com/">zscaler.com</a></td>
+                                <td><a href="https://www.zscaler.com/careers" class="link-btn">Zscaler Early Career</a>
+                                </td>
+                                <td><a href="https://www.linkedin.com/company/zscaler"
+                                        class="link-btn link-linkedin">LinkedIn Profile</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 7: LinkedIn Startup Outreach -->
+        <section id="outreach" class="tab-content" role="tabpanel" aria-labelledby="tab-outreach-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🚀 LinkedIn Startup Outreach Tracker</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Manage prospect profiles, track feedback pipelines, and generate custom cold outreach pitches
+                        for your startup idea.
+                    </p>
+                </div>
+
+                <!-- Add Prospect Form -->
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 20px; border-radius: var(--radius-md); margin-top: 16px;">
+                    <h3 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 16px; color: var(--brand-primary);">➕
+                        Add Prospect & Pitch</h3>
+                    <form id="prospectForm">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Business
+                                    Person Name</label>
+                                <input type="text" id="name" class="input-control" placeholder="e.g., Jane Doe"
+                                    required>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Company
+                                    Name</label>
+                                <input type="text" id="company" class="input-control" placeholder="e.g., Acme Ventures"
+                                    required>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">LinkedIn
+                                    Profile URL</label>
+                                <input type="url" id="linkedin" class="input-control"
+                                    placeholder="https://linkedin.com/in/..." required>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Outreach
+                                    Status</label>
+                                <select id="status" class="select-control" style="width: 100%;">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Sent">Sent</option>
+                                    <option value="Replied">Replied</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Startup
+                                Idea / Value Proposition</label>
+                            <textarea id="idea" class="input-control" rows="3"
+                                placeholder="e.g., An AI tool that automates inventory for local supermarkets." required
+                                style="resize: vertical;"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Add to Prospect List</button>
+                    </form>
+                </div>
+
+                <!-- Prospect Table -->
+                <div style="margin-top: 24px; overflow-x: auto;">
+                    <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--text-primary);">📊 Prospect List &
+                        Outreach Pipeline</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Company</th>
+                                <th>LinkedIn Profile</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prospectTable">
+                            <!-- Dynamic rows appended via JS script below -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="crypto-utils.js"></script>
+    <script src="backend.js"></script>
+    <script src="integrations.js"></script>
+    <script src="app.js"></script>
+
+    <!-- Script to handle LinkedIn Outreach Form interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const form = document.getElementById('prospectForm');
+            const table = document.getElementById('prospectTable');
+
+            function addRowToTable(prospect) {
+                const pitchText = \`Hi \${prospect.name}, thanks for connecting! I'm currently launching a startup that addresses \${prospect.idea}. Given your background at \${prospect.company}, I'd value 5 minutes of your feedback on whether this matches a key pain point in your industry. Open to sharing a quick thought this week?\`;
+
+                const row = document.createElement('tr');
+
+                let statusBadgeClass = 'badge-chennai';
+                if (prospect.status === 'Sent') statusBadgeClass = 'badge-ai';
+                if (prospect.status === 'Replied') statusBadgeClass = 'badge-ai';
+
+                row.innerHTML = \`
+                    <td><strong>\${prospect.name}</strong></td>
+                    <td>\${prospect.company}</td>
+                    <td><a href="\${prospect.linkedin}" target="_blank" rel="noopener" class="link-btn link-linkedin">View Profile</a></td>
+                    <td><span class="badge \${statusBadgeClass}">\${prospect.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="copyPitch(\\\`\${pitchText.replace(/\`/g, '\\\\`')}\\\`)">Copy Pitch</button>
+                    </td >
+                \`;
+
+                table.appendChild(row);
+            }
+
+            if (form && table) {
+                // Load existing prospects
+                try {
+                    const res = await Backend.Prospects.fetchProspects();
+                    if (res && res.prospects) {
+                        res.prospects.forEach(p => addRowToTable(p));
+                    }
+                } catch (e) {
+                    console.error("Failed to load prospects:", e);
+                }
+
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    const name = document.getElementById('name').value;
+                    const company = document.getElementById('company').value;
+                    const linkedin = document.getElementById('linkedin').value;
+                    const status = document.getElementById('status').value;
+                    const idea = document.getElementById('idea').value;
+
+                    const prospectData = { name, company, linkedin, status, idea };
+
+                    try {
+                        await Backend.Prospects.addProspect(prospectData);
+                        addRowToTable(prospectData);
+                        form.reset();
+                    } catch(err) {
+                        alert("Failed to save prospect to database.");
+                    }
+                });
+            }
+        });
+
+        function copyPitch(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Custom cold message copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+
+</html>

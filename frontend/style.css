@@ -28,6 +28,7 @@
   --status-bio-bg: rgba(13, 148, 136, 0.15);
   --status-wiki: hsl(45, 93%, 47%);
   --status-game: hsl(282, 84%, 60%);
+  --status-error: hsl(350, 89%, 60%);
   
   /* Layout tokens */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -1380,3 +1381,177 @@ header .logo svg {
             margin: 0;
             color: #1e40af;
         }
+
+/* ==================== ENHANCED PROJECT ENGINE STYLES ==================== */
+
+.blueprint-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.blueprint-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--border-subtle);
+}
+
+.blueprint-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.blueprint-heading {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--brand-primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tool-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--bg-accent-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-right: 6px;
+    margin-bottom: 6px;
+    transition: all var(--transition-fast);
+}
+
+.tool-tag:hover {
+    background: var(--bg-accent);
+    border-color: var(--brand-primary);
+}
+
+.tool-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.blueprint-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.blueprint-list li {
+    padding: 8px 0;
+    padding-left: 24px;
+    position: relative;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.blueprint-list li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--brand-primary);
+    font-weight: bold;
+}
+
+.roadmap-phase {
+    padding: 12px;
+    background: var(--bg-accent-subtle);
+    border-left: 3px solid var(--brand-primary);
+    margin-bottom: 8px;
+    border-radius: var(--radius-md);
+}
+
+.roadmap-phase-title {
+    font-weight: 600;
+    color: var(--brand-primary);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.roadmap-phase-tasks {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.wiki-result-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.wiki-snippet {
+    background: var(--bg-accent-subtle);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--status-wiki);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.9rem;
+    margin-top: 8px;
+}
+
+.external-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.external-links a {
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.external-links a:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.chip {
+    padding: 6px 12px;
+    background: var(--bg-accent-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.chip:hover {
+    background: var(--bg-accent);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+.btn-wiki {
+    background: var(--status-wiki) !important;
+    color: #000 !important;
+    font-weight: 600;
+}

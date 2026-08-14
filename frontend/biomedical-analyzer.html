@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Biomedical Analyzer - Holder Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .analyzer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .analyzer-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .analyzer-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .analyzer-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .analyzer-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-section {
+            background: var(--bg-card);
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: var(--brand-primary);
+            background: var(--bg-accent);
+        }
+
+        .upload-section.dragover {
+            border-color: var(--brand-primary);
+            background: var(--bg-accent);
+            transform: scale(1.02);
+        }
+
+        #biomedical-image-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-section h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .upload-section p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-section .btn {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+        }
+
+        #biomedical-preview {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+        }
+
+        .query-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .query-section textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+        }
+
+        .analysis-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .analysis-controls .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .analysis-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-primary);
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .labels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .label-badge {
+            display: inline-block;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .analysis-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .analysis-section h4 {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            color: var(--brand-primary);
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .result-item {
+            padding: 15px;
+            background: var(--bg-surface);
+            border-left: 4px solid var(--brand-primary);
+            border-radius: var(--radius-md);
+        }
+
+        .result-item h4 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .result-item h4 a {
+            color: var(--brand-primary);
+            text-decoration: none;
+        }
+
+        .result-item h4 a:hover {
+            text-decoration: underline;
+        }
+
+        .result-item p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .ai-response {
+            padding: 15px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .video-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .video-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .video-card h4 {
+            padding: 10px;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .video-card h4 a {
+            color: var(--brand-primary);
+            text-decoration: none;
+        }
+
+        .video-card p {
+            padding: 0 10px 10px;
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .results-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .history-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+        }
+
+        .history-section h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        #analysis-history {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            border-color: var(--brand-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-info {
+            margin-top: 10px;
+        }
+
+        .history-info p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .history-info small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            background: #10b981;
+            color: white;
+        }
+
+        .notification.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .notification.loading {
+            background: var(--brand-primary);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .integration-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .integration-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .integration-card:hover {
+            border-color: var(--brand-primary);
+            transform: translateY(-5px);
+        }
+
+        .integration-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .integration-card h4 {
+            margin: 10px 0 5px;
+        }
+
+        .integration-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- NOTIFICATION -->
+    <div id="notification" style="display:none;"></div>
+
+    <!-- Main Container -->
+    <div class="analyzer-container">
+        <div class="analyzer-header">
+            <h1>🔬 AI Biomedical Analyzer</h1>
+            <p>Analyze medical images with multiple AI services and search engines</p>
+        </div>
+
+        <!-- Main Analysis Interface -->
+        <div class="analyzer-main">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection" onclick="document.getElementById('biomedical-image-input').click()">
+                <div class="upload-icon">📷</div>
+                <h3>Upload Medical Image/Video</h3>
+                <p>Drag and drop or click to upload</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">JPG, PNG (images) or MP4 (videos) • Max 50MB</p>
+                <input type="file" id="biomedical-image-input" accept="image/jpeg,image/png,image/webp,video/mp4">
+                <button class="btn" style="margin-top: 10px;">Choose File</button>
+            </div>
+
+            <!-- Preview Section -->
+            <div>
+                <h3>Preview</h3>
+                <div id="biomedical-preview" style="background: var(--bg-surface); border: 1px solid var(--border-primary); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                    No image selected
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Section -->
+        <div class="query-section">
+            <h3>Analysis Query</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Describe what you'd like to analyze or what symptoms/conditions to look for</p>
+            <textarea id="biomedical-query-input" placeholder="e.g., Analyze this chest X-ray for signs of pneumonia, inflammation, or other abnormalities. Include lung volume assessment and any notable findings."></textarea>
+            <div class="analysis-controls">
+                <button class="btn" id="analyze-biomedical-btn" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));">
+                    ⚡ Analyze with AI
+                </button>
+                <button class="btn btn-secondary" id="export-pdf-btn">
+                    📄 Export PDF Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Available Integrations -->
+        <div style="margin: 40px 0;">
+            <h2 style="margin-bottom: 20px;">🌐 Integrated Services</h2>
+            <div class="integration-cards">
+                <div class="integration-card">
+                    <div class="integration-icon">🔍</div>
+                    <h4>Google Vision API</h4>
+                    <p>Advanced image analysis, object detection, and OCR</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">🧠</div>
+                    <h4>ChatGPT (OpenAI)</h4>
+                    <p>AI-powered medical insights and analysis</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">✨</div>
+                    <h4>Google Gemini</h4>
+                    <p>Multimodal AI for comprehensive analysis</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">🤖</div>
+                    <h4>Claude (Anthropic)</h4>
+                    <p>Advanced reasoning and analysis capabilities</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">📚</div>
+                    <h4>Wikipedia</h4>
+                    <p>Medical references and background information</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">🔎</div>
+                    <h4>Google Search</h4>
+                    <p>Latest research and clinical findings</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">▶️</div>
+                    <h4>YouTube</h4>
+                    <p>Educational videos and expert explanations</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">💼</div>
+                    <h4>LinkedIn</h4>
+                    <p>Connect with health professionals and experts</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="biomedical-results" style="display:none;">
+            <h2>Analysis Results</h2>
+            <!-- Tabs and results will be populated here -->
+        </div>
+
+        <!-- Analysis History -->
+        <div class="history-section">
+            <h3>📊 Previous Analyses</h3>
+            <div id="analysis-history">
+                <p style="color: var(--text-muted);">Loading your analysis history...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drag and Drop Support -->
+    <script>
+        const uploadSection = document.getElementById('uploadSection');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('biomedical-image-input').files = files;
+                const event = new Event('change', { bubbles: true });
+                document.getElementById('biomedical-image-input').dispatchEvent(event);
+            }
+        });
+    </script>
+
+    <!-- Load Biomedical Analyzer Script -->
+    <script src="biomedical-analyzer.js"></script>
+</body>
+</html>

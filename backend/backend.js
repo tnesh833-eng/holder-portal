@@ -144,6 +144,10 @@ const Backend = {
       return Backend._request(`${API_BASE}/api/admin/users/${id}/verify`, { method: 'POST' });
     },
 
+    async toggleBlockUser(id) {
+      return Backend._request(`${API_BASE}/api/admin/users/${id}/block`, { method: 'POST' });
+    },
+
     async addJob(jobData) {
       return Backend._request(`${API_BASE}/api/admin/jobs`, {
         method: 'POST',

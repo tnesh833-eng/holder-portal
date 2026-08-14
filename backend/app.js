@@ -50,14 +50,19 @@ let uploadedFile = null;
 let scanData = null;
 let showBioMask = true;
 let bioCanvasLoop = null;
-const bioCanvas = document.getElementById('bioAnalysisCanvas');
-const bioCtx = bioCanvas ? bioCanvas.getContext('2d') : null;
-const hiddenVideo = document.getElementById('hiddenVideoPlayer');
+let bioCanvas = null;
+let bioCtx = null;
+let hiddenVideo = null;
 
 // ==================== ONLOAD INITIALIZATION ====================
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Initializing Holder App...");
+
+  // Initialize biomedical canvas elements after DOM ready
+  bioCanvas = document.getElementById('bioAnalysisCanvas');
+  bioCtx = bioCanvas ? bioCanvas.getContext('2d') : null;
+  hiddenVideo = document.getElementById('hiddenVideoPlayer');
   
   // Apply saved theme
   const savedTheme = localStorage.getItem("theme") || "dark";
@@ -93,6 +98,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Draw initial game grid
   drawGameGrid();
+
+  // Init Mind Refresh Games
+  initTTT();
+  initMemory();
+  newScramble();
+  newMath();
 });
 
 // Auth removed - site is open to all visitors
@@ -452,6 +463,11 @@ function switchTab(tabId, btnElement) {
   // Custom tab activities
   if (tabId === "games") {
     drawGameGrid();
+  } else if (tabId === "refresh-games") {
+    initTTT();
+    initMemory();
+    newScramble();
+    newMath();
   } else if (tabId === "dashboard") {
     renderUserDashboard();
   }
@@ -1048,13 +1064,22 @@ async function uploadAndAnalyzeMedia(file) {
       <li><span>Recommendation:</span> <em style="color:var(--text-secondary);">${res.recommendation}</em></li>
     `;
 
+    // Create local object URL from uploaded file for canvas rendering
+    const fileObjectUrl = URL.createObjectURL(file);
+
     // Store for canvas
     scanData = {
       fileType: res.fileType,
       detected_class: res.detected_class,
       confidence: res.confidence,
-      structural_metric: res.structural_metric
+      structural_metric: res.structural_metric,
+      filename: file.name,
+      filepath: file.name,
+      localUrl: fileObjectUrl
     };
+
+    // Render uploaded image/video on canvas
+    renderScanOnCanvas();
 
     // Trigger AI Knowledge Card
     triggerBioKnowledgeCard(res.detected_class);
@@ -1077,18 +1102,16 @@ function renderScanOnCanvas() {
   hiddenVideo.pause();
 
   const isVideo = scanData.fileType === "video";
+  const src = scanData.localUrl;
 
   if (isVideo) {
-    hiddenVideo.src = scanData.filepath;
+    hiddenVideo.src = src;
     hiddenVideo.load();
     hiddenVideo.play();
     
     function drawFrame() {
       if (hiddenVideo.paused || hiddenVideo.ended) return;
       bioCtx.drawImage(hiddenVideo, 0, 0, bioCanvas.width, bioCanvas.height);
-      if (showBioMask && scanData.overlayMask) {
-        drawMask(scanData.overlayMask);
-      }
       bioCanvasLoop = requestAnimationFrame(drawFrame);
     }
     hiddenVideo.onplay = () => {
@@ -1097,12 +1120,17 @@ function renderScanOnCanvas() {
   } else {
     // Image loading
     const img = new Image();
-    img.src = scanData.filepath;
+    img.src = src;
     img.onload = () => {
+      bioCtx.clearRect(0, 0, bioCanvas.width, bioCanvas.height);
       bioCtx.drawImage(img, 0, 0, bioCanvas.width, bioCanvas.height);
-      if (showBioMask && scanData.overlayMask) {
-        drawMask(scanData.overlayMask);
-      }
+      // Draw red scan overlay box
+      bioCtx.strokeStyle = 'rgba(239,68,68,0.85)';
+      bioCtx.lineWidth = 3;
+      bioCtx.strokeRect(60, 60, bioCanvas.width - 120, bioCanvas.height - 120);
+      bioCtx.font = 'bold 13px Outfit, sans-serif';
+      bioCtx.fillStyle = '#ef4444';
+      bioCtx.fillText(`AI: ${scanData.detected_class} (${scanData.confidence.toFixed(1)}%)`, 68, 78);
     };
   }
 }
@@ -1142,11 +1170,11 @@ async function triggerBioKnowledgeCard(className) {
 
   try {
     const data = await Backend.Projects.fetchWikiSummary(className);
-    document.getElementById("autoWikiSnippet").textContent = data.extract || "No encyclopedia data available.";
+    document.getElementById("autoWikiSnippet").textContent = data.summary || data.extract || "No encyclopedia data available.";
     document.getElementById("autoAiDetails").textContent = `Clinical diagnosis confirms matches with ${className} parameters. Recommended procedures include cross-sectional multi-planar MRI re-scans and radiological specialist evaluations.`;
     
     document.getElementById("autoExtLinks").innerHTML = `
-      <a href="${data.pageurl}" target="_blank" class="social-btn">📚 Read Wikipedia Info</a>
+      <a href="${data.url}" target="_blank" class="social-btn">📚 Read Wikipedia Info</a>
       <a href="https://scholar.google.com/scholar?q=${encodeURIComponent(className)}" target="_blank" class="social-btn">🔬 Search Google Scholar</a>
     `;
   } catch (err) {
@@ -1170,22 +1198,21 @@ BIOMEDICAL AI SCAN ANALYSIS REPORT
 ========================================
 Timestamp: ${new Date().toLocaleString()}
 Patient Session Code: USER-SESSION-${currentUser ? currentUser.id : "ANONYMOUS"}
-Media File ID: ${scanData.filepath.split('/').pop()}
+Media File Name: ${scanData.filename || "uploaded-media"}
 
 ----------------------------------------
 DIAGNOSTICS & METRICS:
 ----------------------------------------
-Target Scan Pathology: ${scanData.detectedClass}
-Segmentation Metric:   ${scanData.metric}
-AI Confidence Index:   ${(scanData.confidence * 100).toFixed(2)}%
+Target Scan Pathology: ${scanData.detected_class || "N/A"}
+Segmentation Metric:   ${scanData.structural_metric || "N/A"}
+AI Confidence Index:   ${Number(scanData.confidence || 0).toFixed(1)}%
 Status Flag:           VERIFIED - PASSED PIPELINE FILTERS
 
 ----------------------------------------
 CLINICAL RECOMMENDATION:
 ----------------------------------------
-This is a simulated AI-assisted biomedical model output.
-Verify diagnostic images with certified radiologists.
-Please follow medical procedures for follow-up testing.
+This AI-assisted analysis is generated from the uploaded media and the relevant clinical context available online.
+Use it as a supportive screening summary only. Confirm findings with a certified radiologist or physician before treatment decisions.
 
 ========================================
 HOLDER HEALTH AI DIAGNOSTICS DEPLOYMENT
@@ -1196,7 +1223,7 @@ HOLDER HEALTH AI DIAGNOSTICS DEPLOYMENT
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `Medical_Report_${scanData.detectedClass.replace(/ /g, '_')}.txt`;
+  link.download = `Medical_Report_${(scanData.detected_class || "analysis").replace(/ /g, '_')}.txt`;
   link.click();
 }
 
@@ -1739,7 +1766,8 @@ async function submitVowelLevelAnswer() {
     loadVowelLevel();
   }, 1500);
 }
-\n
+
+
 // ==========================================
 // MIND REFRESH GAMES LOGIC
 // ==========================================
@@ -1989,6 +2017,8 @@ function guessColor(color) {
     }
 }
 
+// Games initialized inside the main DOMContentLoaded above
+
 // Initialize games on load
 document.addEventListener('DOMContentLoaded', () => {
     initTTT();
@@ -1996,3 +2026,376 @@ document.addEventListener('DOMContentLoaded', () => {
     newScramble();
     newMath();
 });
+
+// ==================== ENHANCED PROJECT ENGINE SEARCH ====================
+
+/**
+ * Enhanced search for projects with complete technical details, roadmaps, AI tools, and external links
+ */
+async function searchProjectTopic() {
+    const query = document.getElementById('projectQuery').value.trim();
+    const category = document.getElementById('projectCategory').value;
+
+    if (!query) {
+        alert('Please enter a project topic to search.');
+        return;
+    }
+
+    // Show loading state
+    document.getElementById('blueprintOutput').style.display = 'block';
+    document.getElementById('wikiOutput').style.display = 'block';
+    document.getElementById('wikiSnippet').textContent = 'Searching Wikipedia for background information...';
+
+    try {
+        // Check if it's an exact project match
+        const projectData = getProjectDetails(query);
+        
+        if (projectData) {
+            // Render exact project match
+            renderProjectBlueprint(query, projectData);
+        } else {
+            // Show generic blueprint for any search query
+            renderGenericProjectBlueprint(query, category);
+        }
+
+        // Fetch Wikipedia data
+        const wikiData = await searchWikipedia(query);
+        renderWikiData(query, wikiData, category);
+
+        // Render external search links
+        renderExternalSearchLinks(query);
+
+        // Render AI tools recommendations
+        renderAIToolRecommendations(category);
+
+        // Render coding tools and languages
+        renderCodingTools(category);
+
+        // Render company hiring links
+        renderCompanyLinks(category);
+
+    } catch (error) {
+        console.error('Search error:', error);
+        document.getElementById('wikiSnippet').innerHTML = `<p style="color: var(--status-error);">Error fetching data. Please try another search.</p>`;
+    }
+}
+
+/**
+ * Render exact project blueprint if found in database
+ */
+function renderProjectBlueprint(projectName, projectData) {
+    const container = document.getElementById('blueprintOutput');
+    
+    // Project title
+    document.getElementById('blueprintTopicName').textContent = projectName;
+    document.getElementById('blueprintDomainBadge').textContent = `${projectData.category} • ${projectData.difficulty}`;
+    document.getElementById('blueprintDomainBadge').style.background = projectData.difficulty === 'Advanced' ? 'var(--status-error)' : 'var(--status-wiki)';
+    
+    // Project idea (history)
+    document.getElementById('blueprintIdea').textContent = projectData.history;
+    
+    // Components/Tools
+    const toolsHtml = projectData.components
+        .map(tool => `<span class="tool-tag">${tool}</span>`)
+        .join('');
+    document.getElementById('blueprintTools').innerHTML = toolsHtml;
+    
+    // Build steps from roadmap
+    const stepsHtml = projectData.roadmap
+        .map(phase => `<li><strong>${phase.phase}:</strong> ${phase.tasks}</li>`)
+        .join('');
+    document.getElementById('blueprintSteps').innerHTML = stepsHtml;
+    
+    // Roadmap
+    const roadmapHtml = projectData.roadmap
+        .map(phase => `
+            <div class="roadmap-phase">
+                <div class="roadmap-phase-title">${phase.phase}</div>
+                <div class="roadmap-phase-tasks">${phase.tasks}</div>
+            </div>
+        `)
+        .join('');
+    document.getElementById('blueprintRoadmap').innerHTML = roadmapHtml;
+    
+    // Details
+    const detailsHtml = `
+        <li><strong>Coding Languages:</strong> ${projectData.codingLanguages.join(', ')}</li>
+        <li><strong>Coding Structure:</strong> ${projectData.codingStructure.join(' → ')}</li>
+        <li><strong>Software Tools:</strong> ${projectData.softwareTools.join(', ')}</li>
+        <li><strong>Learning Resources:</strong> ${projectData.resources.join(', ')}</li>
+    `;
+    document.getElementById('blueprintDetails').innerHTML = detailsHtml;
+}
+
+/**
+ * Render generic project blueprint for any topic
+ */
+function renderGenericProjectBlueprint(query, category) {
+    document.getElementById('blueprintTopicName').textContent = query;
+    document.getElementById('blueprintDomainBadge').textContent = category;
+    document.getElementById('blueprintIdea').textContent = `Build a comprehensive ${category.toLowerCase()} project based on "${query}". This project will enhance your technical skills and portfolio.`;
+    
+    const genericComponents = [
+        'Research Materials & Documentation',
+        'Development Environment Setup',
+        'Sample Code Repository',
+        'Testing Framework',
+        'Version Control (Git)',
+        'Project Management Tools',
+        'Community Resources'
+    ];
+    
+    const toolsHtml = genericComponents
+        .map(tool => `<span class="tool-tag">${tool}</span>`)
+        .join('');
+    document.getElementById('blueprintTools').innerHTML = toolsHtml;
+    
+    const steps = [
+        'Research the topic thoroughly using Wikipedia, academic papers, and tutorials',
+        'Define project scope, requirements, and success criteria',
+        'Design the architecture and create a detailed technical specification',
+        'Set up development environment and initialize repository',
+        'Implement core features in phases with regular testing',
+        'Document code, create user guides, and prepare demo materials',
+        'Deploy, monitor, and gather feedback for improvements'
+    ];
+    
+    const stepsHtml = steps
+        .map(step => `<li>${step}</li>`)
+        .join('');
+    document.getElementById('blueprintSteps').innerHTML = stepsHtml;
+    
+    const roadmap = [
+        { phase: 'Research & Planning', tasks: '3-5 days' },
+        { phase: 'Environment Setup', tasks: '1-2 days' },
+        { phase: 'Core Development', tasks: '10-15 days' },
+        { phase: 'Testing & Optimization', tasks: '3-5 days' },
+        { phase: 'Documentation', tasks: '2-3 days' },
+        { phase: 'Deployment & Monitoring', tasks: '2-3 days' }
+    ];
+    
+    const roadmapHtml = roadmap
+        .map(phase => `
+            <div class="roadmap-phase">
+                <div class="roadmap-phase-title">${phase.phase}</div>
+                <div class="roadmap-phase-tasks">${phase.tasks}</div>
+            </div>
+        `)
+        .join('');
+    document.getElementById('blueprintRoadmap').innerHTML = roadmapHtml;
+    
+    const detailsHtml = `
+        <li><strong>Project Type:</strong> ${category}</li>
+        <li><strong>Skill Level:</strong> Intermediate to Advanced</li>
+        <li><strong>Key Success Factors:</strong> Consistent effort, regular testing, comprehensive documentation</li>
+        <li><strong>Suggested Portfolio Platforms:</strong> GitHub, Behance, Dribbble, personal portfolio website</li>
+    `;
+    document.getElementById('blueprintDetails').innerHTML = detailsHtml;
+}
+
+/**
+ * Render Wikipedia background data
+ */
+function renderWikiData(query, wikiData, category) {
+    if (!wikiData) {
+        document.getElementById('wikiSnippet').innerHTML = `<p style="color: var(--text-secondary);">No Wikipedia data found for "${query}". Showing general information instead.</p>`;
+        document.getElementById('wikiTitle').textContent = 'General Background';
+        return;
+    }
+
+    document.getElementById('wikiTitle').textContent = wikiData.title;
+    document.getElementById('wikiSnippet').innerHTML = `<p>${wikiData.snippet}</p>`;
+    
+    const techDetails = [
+        `<strong>Topic:</strong> ${wikiData.title}`,
+        `<strong>Category:</strong> ${category}`,
+        `<strong>Read More:</strong> <a href="${wikiData.url}" target="_blank" style="color: var(--brand-primary); text-decoration: underline;">Wikipedia Article</a>`,
+        `<strong>Primary Use Cases:</strong> Educational projects, portfolio building, professional development`,
+        `<strong>Industry Relevance:</strong> Highly relevant for career growth and technical skill enhancement`
+    ];
+    
+    document.getElementById('techDetails').innerHTML = techDetails
+        .map(detail => `<li>${detail}</li>`)
+        .join('');
+}
+
+/**
+ * Render AI Tools recommendations
+ */
+function renderAIToolRecommendations(category) {
+    const aiTools = getRecommendedAITools(category);
+    
+    const aiHtml = aiTools
+        .map(tool => `
+            <div style="padding: 10px; background: var(--bg-subtle); border-radius: var(--radius-md); border-left: 3px solid var(--brand-primary); text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">${tool.icon}</div>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 4px;">${tool.name}</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">${tool.category}</div>
+                <a href="${tool.url}" target="_blank" style="font-size: 0.8rem; color: var(--brand-primary); text-decoration: none; font-weight: 600;">Visit →</a>
+            </div>
+        `)
+        .join('');
+    
+    document.getElementById('aiToolsList').innerHTML = aiHtml;
+}
+
+/**
+ * Render external search links
+ */
+function renderExternalSearchLinks(query) {
+    const links = getExternalSearchLinks(query);
+    
+    const linksHtml = `
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+            <a href="${links.google}" target="_blank" class="btn btn-sm" style="background: #4285F4; color: white;">🔍 Google</a>
+            <a href="${links.youtube}" target="_blank" class="btn btn-sm" style="background: #FF0000; color: white;">▶ YouTube</a>
+            <a href="${links.github}" target="_blank" class="btn btn-sm" style="background: #333; color: white;">🐙 GitHub</a>
+            <a href="${links.stackOverflow}" target="_blank" class="btn btn-sm" style="background: #F48024; color: white;">📚 Stack Overflow</a>
+            <a href="${links.linkedin}" target="_blank" class="btn btn-sm" style="background: #0077B5; color: white;">💼 LinkedIn</a>
+        </div>
+    `;
+    
+    document.getElementById('extLinks').innerHTML = linksHtml;
+}
+
+/**
+ * Render coding tools and languages
+ */
+function renderCodingTools(category) {
+    const codingItems = [
+        { lang: 'Python', relevance: category.includes('Software') ? 'High' : 'Medium' },
+        { lang: 'JavaScript/TypeScript', relevance: 'High' },
+        { lang: 'Git & GitHub', relevance: 'High' },
+        { lang: 'Docker & Kubernetes', relevance: 'Medium' },
+        { lang: 'VS Code / JetBrains IDE', relevance: 'High' },
+        { lang: 'Postman API Testing', relevance: 'Medium' }
+    ];
+    
+    const codingHtml = codingItems
+        .map(item => `
+            <span style="padding: 6px 12px; background: var(--bg-accent-subtle); border-radius: var(--radius-md); font-size: 0.85rem; border-left: 2px solid var(--brand-primary);">
+                <strong>${item.lang}</strong> <span style="color: var(--text-secondary);">(${item.relevance})</span>
+            </span>
+        `)
+        .join('');
+    
+    document.getElementById('codingTools').innerHTML = codingHtml;
+}
+
+/**
+ * Render company hiring links
+ */
+function renderCompanyLinks(category) {
+    const companies = [
+        { name: 'Google Careers', url: 'https://careers.google.com', logo: '🔍' },
+        { name: 'Microsoft Careers', url: 'https://careers.microsoft.com', logo: '💻' },
+        { name: 'Amazon Jobs', url: 'https://www.amazon.jobs', logo: '📦' },
+        { name: 'GitHub Jobs', url: 'https://github.com/about/careers', logo: '🐙' },
+        { name: 'Stack Overflow Jobs', url: 'https://stackoverflow.com/jobs', logo: '📚' },
+        { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs', logo: '💼' }
+    ];
+    
+    const companiesHtml = companies
+        .map(company => `
+            <a href="${company.url}" target="_blank" style="padding: 10px; background: var(--bg-subtle); border-radius: var(--radius-md); text-decoration: none; color: var(--text-primary); border: 1px solid var(--border-subtle); text-align: center; transition: all 0.2s;">
+                <div style="font-size: 1.5rem; margin-bottom: 4px;">${company.logo}</div>
+                <div style="font-size: 0.85rem; font-weight: 600;">${company.name}</div>
+            </a>
+        `)
+        .join('');
+    
+    document.getElementById('companyLinks').innerHTML = companiesHtml;
+}
+
+/**
+ * Update quick search chips based on category
+ */
+function updateChips() {
+    const category = document.getElementById('projectCategory').value;
+    const chips = category === 'Hardware' 
+        ? ['Arduino', 'Smart Home', 'IoT', 'Robotics', 'Weather Station']
+        : ['Web App', 'Machine Learning', 'API', 'Mobile App', 'E-commerce'];
+    
+    const container = document.getElementById('chipsContainer');
+    container.innerHTML = chips
+        .map(chip => `<button class="chip" onclick="setProjectQuery('${chip}')">${chip}</button>`)
+        .join('');
+}
+
+/**
+ * Set project query from chip
+ */
+function setProjectQuery(query) {
+    document.getElementById('projectQuery').value = query;
+    searchProjectTopic();
+}
+
+/**
+ * Enable daily company notifications
+ */
+function enableCompanyNotifications() {
+    const enabled = confirm('Enable daily notifications for:\n✓ Job Openings\n✓ Internship Alerts\n✓ Company Updates\n✓ Skill Recommendations\n\nYou will receive notifications at 9:00 AM daily.');
+    
+    if (enabled) {
+        localStorage.setItem('companyNotificationsEnabled', 'true');
+        localStorage.setItem('notificationTime', '09:00');
+        
+        // Schedule daily notifications
+        scheduleDailyNotifications();
+        
+        alert('✓ Daily notifications enabled! Check your browser notification settings to confirm.');
+    }
+}
+
+/**
+ * Schedule daily company notifications
+ */
+function scheduleDailyNotifications() {
+    // Check every hour if it's time to send notification
+    setInterval(() => {
+        const enabled = localStorage.getItem('companyNotificationsEnabled') === 'true';
+        if (!enabled) return;
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Send notification at 9 AM
+        if (currentHour === 9 && currentMinute === 0) {
+            sendDailyNotification();
+        }
+    }, 60000); // Check every minute
+}
+
+/**
+ * Send daily notification
+ */
+function sendDailyNotification() {
+    const notifications = [
+        '🔔 New job openings at Google, Microsoft, and Amazon - Check your email!',
+        '💼 Internship alerts: 5 new positions in your field - Apply now!',
+        '📚 Daily skill challenge: Complete a coding problem on LeetCode',
+        '🎓 New course available: Machine Learning with Python - Enroll today!',
+        '🚀 Tech news update: Latest AI breakthroughs and industry trends'
+    ];
+    
+    const randomNotification = notifications[Math.floor(Math.random() * notifications.length)];
+    
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Holder - Career Growth Update', {
+            body: randomNotification,
+            icon: '🏆',
+            badge: '🎯'
+        });
+    }
+}
+
+// Initialize quick chips on tab switch
+function initProjectEngineTab() {
+    updateChips();
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}

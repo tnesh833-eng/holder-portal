@@ -52,6 +52,7 @@ function initializeDatabase() {
       name TEXT,
       mobile TEXT,
       is_verified INTEGER DEFAULT 0,
+      is_blocked INTEGER DEFAULT 0,
       verification_code TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`);
@@ -59,6 +60,7 @@ function initializeDatabase() {
     try { db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT;`); } catch(e) {}
     try { db.exec(`ALTER TABLE users ADD COLUMN public_key TEXT;`); } catch(e) {}
     try { db.exec(`ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 0;`); } catch(e) {}
+    try { db.exec(`ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0;`); } catch(e) {}
     try { db.exec(`ALTER TABLE users ADD COLUMN verification_code TEXT;`); } catch(e) {}
 
     // 2. Jobs Table
@@ -130,6 +132,55 @@ function initializeDatabase() {
       status TEXT NOT NULL,
       idea TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`);
+
+    // 8. AI Biomedical Analysis Results Table
+    db.exec(`CREATE TABLE IF NOT EXISTS biomedical_analyses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      image_url TEXT NOT NULL,
+      query_text TEXT,
+      google_vision_labels TEXT,
+      google_vision_text TEXT,
+      google_vision_objects TEXT,
+      wikipedia_results TEXT,
+      google_search_results TEXT,
+      chatgpt_analysis TEXT,
+      gemini_analysis TEXT,
+      claude_analysis TEXT,
+      youtube_results TEXT,
+      analysis_status TEXT DEFAULT 'completed',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+    );`);
+
+    // 9. AI Integration Results Table
+    db.exec(`CREATE TABLE IF NOT EXISTS ai_integration_results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      integration_type TEXT NOT NULL,
+      query TEXT NOT NULL,
+      result_data TEXT,
+      source TEXT,
+      status TEXT DEFAULT 'success',
+      error_message TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+    );`);
+
+    // 10. PDF Reports Table
+    db.exec(`CREATE TABLE IF NOT EXISTS pdf_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      analysis_id INTEGER,
+      report_title TEXT NOT NULL,
+      report_content TEXT,
+      file_path TEXT,
+      file_size INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY(analysis_id) REFERENCES biomedical_analyses(id) ON DELETE SET NULL
     );`);
 
     // Seed default jobs if empty

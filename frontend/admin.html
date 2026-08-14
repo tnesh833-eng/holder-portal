@@ -148,7 +148,7 @@
                             <th>Name</th>
                             <th>Email Address</th>
                             <th>Mobile</th>
-                            <th>Email Verification</th>
+                            <th>Status</th>
                             <th>Public Key (RSA)</th>
                             <th>Registered</th>
                             <th>Actions</th>
@@ -252,8 +252,8 @@
                         <td>${u.email}</td>
                         <td>${u.mobile || 'N/A'}</td>
                         <td>
-                            <span class="status-badge ${u.is_verified ? 'verified' : 'pending'}">
-                                ${u.is_verified ? '🟢 Verified' : '🟡 Unverified (OTP Pending)'}
+                            <span class="status-badge ${u.is_blocked ? 'pending' : (u.is_verified ? 'verified' : 'pending')}">
+                                ${u.is_blocked ? '⛔ Blocked' : (u.is_verified ? '🟢 Verified' : '🟡 Pending OTP')}
                             </span>
                         </td>
                         <td title="${u.public_key || ''}" style="font-family:monospace; font-size:0.75rem;">
@@ -264,10 +264,13 @@
                         </td>
                         <td>
                             <button class="btn btn-sm btn-secondary" onclick="toggleVerify(${u.id})">
-                                ${u.is_verified ? 'Unverify' : 'Verify'}
+                                ${u.is_verified ? 'Unverify' : 'Confirm'}
                             </button>
-                            <button class="btn btn-sm" style="background:var(--status-live);" onclick="deleteUser(${u.id})">
-                                Delete
+                            <button class="btn btn-sm" style="background:var(--status-live);" onclick="toggleBlock(${u.id})">
+                                ${u.is_blocked ? 'Unblock' : 'Block'}
+                            </button>
+                            <button class="btn btn-sm" style="background:var(--status-live); margin-top:6px;" onclick="deleteUser(${u.id})">
+                                Remove
                             </button>
                         </td>
                     </tr>
@@ -284,6 +287,15 @@
                 await loadAdminData();
             } catch (err) {
                 alert("Failed to toggle verification: " + err.message);
+            }
+        }
+
+        async function toggleBlock(id) {
+            try {
+                await Backend.Admin.toggleBlockUser(id);
+                await loadAdminData();
+            } catch (err) {
+                alert("Failed to update user block state: " + err.message);
             }
         }
 
