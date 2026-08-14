@@ -95,57 +95,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   drawGameGrid();
 });
 
-// Check current user session
+// Auth removed - site is open to all visitors
 async function checkAuthSession() {
-  try {
-    const data = await Backend.Auth.me();
-    if (data && data.user) {
-      currentUser = data.user;
-      updateAuthUI(true);
-    } else {
-      currentUser = null;
-      updateAuthUI(false);
-    }
-  } catch (err) {
-    console.error("Auth session check failed:", err);
-    updateAuthUI(false);
-  }
+  // No authentication required
+  currentUser = null;
 }
 
-// Update authentication UI elements
+
+// Auth UI removed - no login/signup
 function updateAuthUI(isLoggedIn) {
-  const headerSignInBtn = document.getElementById("headerSignInBtn");
-  const headerUserBadge = document.getElementById("headerUserBadge");
-  const headerUserEmail = document.getElementById("headerUserEmail");
-  const headerUserAvatar = document.getElementById("headerUserAvatar");
-  const authModal = document.getElementById("auth-modal");
-  
-  // Settings modal fields
-  const setName = document.getElementById("set-name");
-  const setEmail = document.getElementById("set-email");
-  const setMobile = document.getElementById("set-mobile");
-
-  if (isLoggedIn && currentUser) {
-    headerSignInBtn.classList.add("hidden");
-    headerUserBadge.style.display = "flex";
-    headerUserEmail.textContent = currentUser.name;
-    // Generate initials avatar
-    headerUserAvatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name)}&backgroundType=gradientLinear`;
-    
-    if (setName) setName.textContent = currentUser.name;
-    if (setEmail) setEmail.textContent = currentUser.email;
-    if (setMobile) setMobile.textContent = currentUser.mobile || "Not Provided";
-    
-    authModal.classList.add("hidden");
-  } else {
-    headerSignInBtn.classList.remove("hidden");
-    headerUserBadge.style.display = "none";
-    
-    if (setName) setName.textContent = "";
-    if (setEmail) setEmail.textContent = "";
-    if (setMobile) setMobile.textContent = "";
-  }
+  // No-op: authentication has been removed
 }
+
 
 // Tab navigation routing
 function setupTabRouting() {
@@ -280,32 +241,10 @@ async function handleResendCode() {
   }
 }
 
-async function authLogout() {
-  try {
-    await Backend.Auth.logOut();
-    currentUser = null;
-    updateAuthUI(false);
-    alert("Signed out successfully.");
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-  }
-}
+// Auth removed
+function authLogout() {}
+async function deactivateAccount() {}
 
-async function deactivateAccount() {
-  if (confirm("Are you sure you want to permanently delete your account? All score logs and history will be cleared.")) {
-    try {
-      await Backend.Auth.deactivate();
-      currentUser = null;
-      updateAuthUI(false);
-      document.getElementById("settings-modal").classList.add("hidden");
-      alert("Your account has been deleted.");
-      window.location.reload();
-    } catch (err) {
-      alert("Deactivation failed: " + err.message);
-    }
-  }
-}
 
 // ==================== DYNAMIC ANIMATED BACKGROUND ====================
 
@@ -1041,11 +980,11 @@ async function searchProjectTopic() {
   // Fetch Wikipedia proxy data
   try {
     const data = await Backend.Projects.fetchWikiSummary(query);
-    document.getElementById("wikiSnippet").textContent = data.extract || "No extract available.";
+    document.getElementById("wikiSnippet").textContent = data.summary || data.extract || "No extract available.";
     
     const extLinks = document.getElementById("extLinks");
     extLinks.innerHTML = `
-      <a href="${data.pageurl}" target="_blank" class="social-btn">📚 Read Wikipedia</a>
+      <a href="${data.url}" target="_blank" class="social-btn">📚 Read Wikipedia</a>
       <a href="https://github.com/search?q=${encodeURIComponent(query)}" target="_blank" class="social-btn">💻 Github Projects</a>
       <a href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" class="social-btn">🔍 Google Deep Search</a>
     `;
@@ -1094,25 +1033,31 @@ async function uploadAndAnalyzeMedia(file) {
   const progressContainer = document.getElementById("scanProgressBar");
   try {
     const res = await Backend.Biomedical.uploadScan(file);
-    scanData = res.scan;
 
-    // Load metrics
+    // Load metrics from flat response
     document.getElementById("analysisStatus").textContent = "Analysis pipeline completed. Diagnostics extracted.";
     document.getElementById("analysisTitle").textContent = "Diagnostic Report";
     
     const metricList = document.getElementById("metricList");
     metricList.innerHTML = `
       <li><span>Pipeline Status:</span> <strong style="color:var(--status-success);">Analysis Verified</strong></li>
-      <li><span>Detected Class:</span> <strong>${scanData.detectedClass}</strong></li>
-      <li><span>Structural Metric:</span> <strong>${scanData.metric}</strong></li>
-      <li><span>Confidence Score:</span> <strong style="color:var(--status-bio);">${(scanData.confidence * 100).toFixed(2)}%</strong></li>
+      <li><span>File Type:</span> <strong>${res.fileType}</strong></li>
+      <li><span>Detected Class:</span> <strong>${res.detected_class}</strong></li>
+      <li><span>Structural Metric:</span> <strong>${res.structural_metric}</strong></li>
+      <li><span>Confidence Score:</span> <strong style="color:var(--status-bio);">${res.confidence.toFixed(1)}%</strong></li>
+      <li><span>Recommendation:</span> <em style="color:var(--text-secondary);">${res.recommendation}</em></li>
     `;
 
-    // Render onto analysis canvas
-    renderScanOnCanvas();
+    // Store for canvas
+    scanData = {
+      fileType: res.fileType,
+      detected_class: res.detected_class,
+      confidence: res.confidence,
+      structural_metric: res.structural_metric
+    };
 
     // Trigger AI Knowledge Card
-    triggerBioKnowledgeCard(scanData.detectedClass);
+    triggerBioKnowledgeCard(res.detected_class);
 
   } catch (err) {
     document.getElementById("analysisStatus").textContent = "Scan Pipeline failed: " + err.message;
@@ -1120,6 +1065,7 @@ async function uploadAndAnalyzeMedia(file) {
     setTimeout(() => { progressContainer.style.display = "none"; }, 1000);
   }
 }
+
 
 function renderScanOnCanvas() {
   if (!bioCtx || !scanData) return;

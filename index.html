@@ -15,73 +15,8 @@
     <!-- DYNAMIC ANIMATED BACKGROUND CANVAS & AMBIENT GLOW BLOBS -->
     <canvas id="bg-animated-canvas"></canvas>
 
-    <!-- AUTHENTICATION MODAL -->
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="card-title" style="margin-bottom: 4px;">Holder</h2>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">End-to-End Encrypted
-                Authentication</p>
 
-            <div class="modal-tabs">
-                <button onclick="switchAuthMode('signup')" id="auth-tab-signup"
-                    class="modal-tab-btn active">Signup</button>
-                <button onclick="switchAuthMode('login')" id="auth-tab-login" class="modal-tab-btn">Login</button>
-            </div>
 
-            <!-- SIGN UP -->
-            <form id="auth-signup-form" onsubmit="handleAuthSignup(event)">
-                <div class="form-group"><label>Full Name</label><input type="text" id="signup-name"
-                        class="input-control" required placeholder="Rank Holder"></div>
-                <div class="form-group"><label>Email</label><input type="email" id="signup-email" class="input-control"
-                        required placeholder="gokulsharmila82@gmail.com"></div>
-                <div class="form-group"><label>Mobile (Optional)</label><input type="text" id="signup-mobile"
-                        class="input-control" placeholder="+91 8610017559"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="signup-password"
-                        class="input-control" required placeholder="....."></div>
-                <button type="submit" id="btn-signup" class="btn w-full" style="width: 100%;">Register Account</button>
-            </form>
-
-            <!-- LOGIN -->
-            <form id="auth-login-form" onsubmit="handleAuthLogin(event)" class="hidden">
-                <div class="form-group"><label>Email</label><input type="email" id="login-email" class="input-control"
-                        required placeholder="gokulsharmila82@gmail.com"></div>
-                <div class="form-group"><label>Password</label><input type="password" id="login-password"
-                        class="input-control" required placeholder="........"></div>
-                <button type="submit" id="btn-login" class="btn w-full" style="width: 100%;">Login Securely</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- EMAIL VERIFICATION OTP MODAL -->
-    <div id="verify-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="card-title" style="margin-bottom: 4px;">✉️ Verify Email Address</h2>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
-                Enter the 6-digit verification code sent to <strong id="verifyEmailTarget"
-                    style="color:var(--brand-primary)">--</strong>
-            </p>
-
-            <form id="verify-otp-form" onsubmit="handleVerifyEmailSubmit(event)">
-                <div class="form-group">
-                    <label>6-Digit Verification Code</label>
-                    <input type="text" id="verify-code-input" class="input-control" required placeholder="e.g. 482915"
-                        maxlength="6"
-                        style="text-align: center; font-size: 1.4rem; letter-spacing: 0.2em; font-family: monospace;">
-                </div>
-                <div id="verifyCodeDisplayHint"
-                    style="font-size: 0.8rem; background: var(--status-success-bg); color: var(--status-success); border: 1px solid var(--status-success); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 16px; display: none;">
-                    Verification Code: <strong id="hintOtpCode">--</strong>
-                </div>
-                <button type="submit" class="btn w-full" style="width: 100%;">Verify & Sign In</button>
-            </form>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                <button type="button" onclick="handleResendCode()" class="chip" style="margin: 0;">📩 Resend
-                    Code</button>
-                <button type="button" onclick="document.getElementById('verify-modal').classList.add('hidden')"
-                    class="chip" style="margin: 0; color: var(--status-live);">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="modal-overlay hidden">
@@ -127,35 +62,19 @@
             <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme">
                 <span id="themeIcon">☀️</span> <span id="themeLabel">Light</span>
             </button>
-            <div id="headerAuthArea">
-                <button class="btn btn-sm" id="headerSignInBtn"
-                    onclick="document.getElementById('auth-modal').classList.remove('hidden')">
-                    Sign In
-                </button>
-                <div class="user-profile-badge" id="headerUserBadge"
-                    style="display:none; align-items: center; gap: 8px; cursor: pointer;"
-                    onclick="document.getElementById('settings-modal').classList.remove('hidden')">
-                    <img id="headerUserAvatar" src="" alt="Avatar"
-                        style="width: 32px; height: 32px; border-radius: 50%;">
-                    <span class="user-email-label" id="headerUserEmail"
-                        style="font-weight: 600; font-size: 0.9rem;"></span>
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); authLogout()">Sign
-                        Out</button>
-                </div>
-            </div>
+            <div id="headerAuthArea"></div>
         </div>
     </header>
 
     <div class="container">
         <nav class="tab-bar" role="tablist" aria-label="Portal Sections">
-            <button class="tab-btn active" id="tab-english-btn" role="tab" aria-selected="true" aria-controls="english"
-                onclick="switchTab('english', this)">
+            <button class="tab-btn" id="tab-biomedical-btn" role="tab" aria-selected="false" aria-controls="biomedical"
+                onclick="switchTab('biomedical', this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                    <line x1="12" y1="19" x2="12" y2="22" />
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <circle cx="12" cy="12" r="3" />
                 </svg>
-                English Communication & Interview Hub
+                Biomedical Vision AI Scanner
             </button>
             <button class="tab-btn" id="tab-jobs-btn" role="tab" aria-selected="false" aria-controls="jobs"
                 onclick="switchTab('jobs', this)">
@@ -165,21 +84,14 @@
                 </svg>
                 Career Growth
             </button>
-            <button class="tab-btn" id="tab-projects-btn" role="tab" aria-selected="false" aria-controls="projects"
-                onclick="switchTab('projects', this)">
+            <button class="tab-btn active" id="tab-english-btn" role="tab" aria-selected="true" aria-controls="english"
+                onclick="switchTab('english', this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
                 </svg>
-                Project Engine
-            </button>
-            <button class="tab-btn" id="tab-biomedical-btn" role="tab" aria-selected="false" aria-controls="biomedical"
-                onclick="switchTab('biomedical', this)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                    <circle cx="12" cy="12" r="3" />
-                </svg>
-                Biomedical Vision AI Scanner
+                English Communication & Interview Hub
             </button>
             <button class="tab-btn" id="tab-games-btn" role="tab" aria-selected="false" aria-controls="games"
                 onclick="switchTab('games', this)">
@@ -188,14 +100,22 @@
                 </svg>
                 Mind Refresh Games
             </button>
-        
+            <button class="tab-btn" id="tab-projects-btn" role="tab" aria-selected="false" aria-controls="projects"
+                onclick="switchTab('projects', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                Project Engine
+            </button>
             <button class="tab-btn" id="tab-companies-btn" role="tab" aria-selected="false" aria-controls="companies"
                 onclick="switchTab('companies', this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h6M9 13h6M9 17h6" />
                 </svg>
                 Top Software Companies
-            </button></nav>
+            </button>
+        </nav>
 
         <!-- TAB 1: English Communication & Interview Hub -->
         <section id="english" class="tab-content active" role="tabpanel" aria-labelledby="tab-english-btn">
@@ -643,8 +563,7 @@
                 </div>
             </div>
             <!-- TAB 6: Mind Refresh Games -->
-            <section id="games" class="tab-content" role="tabpanel" aria-labelledby="tab-games-btn">
-                <div class="card">
+                <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
                         <h2 class="card-title">🎮 Mind Refresh Games</h2>
                         <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
