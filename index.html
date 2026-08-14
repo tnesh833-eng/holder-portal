@@ -112,6 +112,16 @@
                 </svg>
                 Top Software Companies
             </button>
+            <!-- TAB 7 BUTTON: LinkedIn Startup Outreach -->
+            <button class="tab-btn" id="tab-outreach-btn" role="tab" aria-selected="false" aria-controls="outreach"
+                onclick="switchTab('outreach', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                    <rect x="2" y="9" width="4" height="12" />
+                    <circle cx="4" cy="4" r="2" />
+                </svg>
+                LinkedIn Outreach
+            </button>
         </nav>
 
         <!-- TAB 1: English Communication & Interview Hub -->
@@ -976,11 +986,123 @@
                 </div>
             </div>
         </section>
+
+        <!-- TAB 7: LinkedIn Startup Outreach -->
+        <section id="outreach" class="tab-content" role="tabpanel" aria-labelledby="tab-outreach-btn">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🚀 LinkedIn Startup Outreach Tracker</h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                        Manage prospect profiles, track feedback pipelines, and generate custom cold outreach pitches for your startup idea.
+                    </p>
+                </div>
+
+                <!-- Add Prospect Form -->
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 20px; border-radius: var(--radius-md); margin-top: 16px;">
+                    <h3 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 16px; color: var(--brand-primary);">➕ Add Prospect & Pitch</h3>
+                    <form id="prospectForm">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Business Person Name</label>
+                                <input type="text" id="name" class="input-control" placeholder="e.g., Jane Doe" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Company Name</label>
+                                <input type="text" id="company" class="input-control" placeholder="e.g., Acme Ventures" required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">LinkedIn Profile URL</label>
+                                <input type="url" id="linkedin" class="input-control" placeholder="https://linkedin.com/in/..." required>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Outreach Status</label>
+                                <select id="status" class="select-control" style="width: 100%;">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Sent">Sent</option>
+                                    <option value="Replied">Replied</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--text-secondary);">Startup Idea / Value Proposition</label>
+                            <textarea id="idea" class="input-control" rows="3" placeholder="e.g., An AI tool that automates inventory for local supermarkets." required style="resize: vertical;"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Add to Prospect List</button>
+                    </form>
+                </div>
+
+                <!-- Prospect Table -->
+                <div style="margin-top: 24px; overflow-x: auto;">
+                    <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--text-primary);">📊 Prospect List & Outreach Pipeline</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Company</th>
+                                <th>LinkedIn Profile</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prospectTable">
+                            <!-- Dynamic rows appended via JS script below -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script src="crypto-utils.js"></script>
     <script src="backend.js"></script>
     <script src="app.js"></script>
+
+    <!-- Script to handle LinkedIn Outreach Form interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('prospectForm');
+            const table = document.getElementById('prospectTable');
+
+            if (form && table) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    const name = document.getElementById('name').value;
+                    const company = document.getElementById('company').value;
+                    const linkedin = document.getElementById('linkedin').value;
+                    const status = document.getElementById('status').value;
+                    const idea = document.getElementById('idea').value;
+
+                    const pitchText = `Hi ${name}, thanks for connecting! I'm currently launching a startup that addresses ${idea}. Given your background at ${company}, I'd value 5 minutes of your feedback on whether this matches a key pain point in your industry. Open to sharing a quick thought this week?`;
+
+                    const row = document.createElement('tr');
+
+                    let statusBadgeClass = 'badge-chennai';
+                    if (status === 'Sent') statusBadgeClass = 'badge-ai';
+                    if (status === 'Replied') statusBadgeClass = 'badge-ai';
+
+                    row.innerHTML = `
+                        <td><strong>${name}</strong></td>
+                        <td>${company}</td>
+                        <td><a href="${linkedin}" target="_blank" rel="noopener" class="link-btn link-linkedin">View Profile</a></td>
+                        <td><span class="badge ${statusBadgeClass}">${status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="copyPitch(\`${pitchText.replace(/`/g, '\\`')}\`)">Copy Pitch</button>
+                        </td>
+                    `;
+
+                    table.appendChild(row);
+                    form.reset();
+                });
+            }
+        });
+
+        function copyPitch(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Custom cold message copied to clipboard!");
+            });
+        }
+    </script>
 </body>
 
 </html>
