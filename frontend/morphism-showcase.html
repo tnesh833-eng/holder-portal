@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morphism Design System - Holder Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="morphism.css">
+    <style>
+        .showcase-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .showcase-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .showcase-header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .showcase-header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .demo-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--bg-surface);
+        }
+
+        .demo-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* Glassmorphism Section */
+        .glass-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .glass-demo {
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .glass-demo h4 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .glass-demo p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Neumorphism Section */
+        .neuro-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .neuro-demo {
+            padding: 24px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Button Showcase */
+        .button-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Input Showcase */
+        .input-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.95rem;
+        }
+
+        /* Card Showcase */
+        .card-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .showcase-card {
+            padding: 24px;
+            border-radius: 16px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .showcase-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .showcase-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .showcase-card .badge-glass,
+        .showcase-card .badge-neumorphic,
+        .showcase-card .badge-clay {
+            align-self: flex-start;
+        }
+
+        /* Animation Showcase */
+        .animation-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .animation-demo {
+            padding: 30px;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animation-element {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        /* Code Example */
+        .code-block {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .comparison-table th {
+            background: var(--bg-accent);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .comparison-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: var(--bg-accent);
+        }
+
+        @media (max-width: 768px) {
+            .showcase-header h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .demo-grid,
+            .glass-showcase,
+            .neuro-showcase,
+            .card-showcase,
+            .animation-showcase {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <!-- Header -->
+        <div class="showcase-header">
+            <h1>✨ Morphism Design System</h1>
+            <p>Comprehensive UI/UX design patterns including Glassmorphism, Neumorphism, and Claymorphism</p>
+        </div>
+
+        <!-- Glassmorphism Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🔮</span>
+                Glassmorphism
+            </div>
+            <div class="section-description">
+                Glassmorphism creates a frosted glass effect with backdrop blur and transparency. It's perfect for modern,
+                elegant interfaces that need visual hierarchy.
+            </div>
+
+            <div class="glass-showcase">
+                <div class="glass-demo glass-sm">
+                    <h4>Glass SM</h4>
+                    <p>Small blur effect</p>
+                </div>
+                <div class="glass-demo glass-md">
+                    <h4>Glass MD</h4>
+                    <p>Medium blur effect</p>
+                </div>
+                <div class="glass-demo glass-lg">
+                    <h4>Glass LG</h4>
+                    <p>Large blur effect</p>
+                </div>
+                <div class="glass-demo glass-xl">
+                    <h4>Glass XL</h4>
+                    <p>Extra large blur effect</p>
+                </div>
+                <div class="glass-demo glass-primary">
+                    <h4>Glass Primary</h4>
+                    <p>Colored tint variant</p>
+                </div>
+                <div class="glass-demo glass-success">
+                    <h4>Glass Success</h4>
+                    <p>Success color variant</p>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>&lt;div class="glass glass-md"&gt;<br/>
+&nbsp;&nbsp;&lt;h3&gt;Frosted Glass Effect&lt;/h3&gt;<br/>
+&nbsp;&nbsp;&lt;p&gt;Backdrop blur with transparency&lt;/p&gt;<br/>
+&lt;/div&gt;</code>
+            </div>
+        </div>
+
+        <!-- Neumorphism Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🎨</span>
+                Neumorphism
+            </div>
+            <div class="section-description">
+                Neumorphism (Soft UI) creates an embossed or extruded effect with subtle shadows and gradients.
+                It feels soft, subtle, and intuitive.
+            </div>
+
+            <div class="neuro-showcase">
+                <div class="neumorphic-sm neuro-demo">
+                    <h4>Neumorphic SM</h4>
+                    <p>Small embossed effect</p>
+                </div>
+                <div class="neumorphic neuro-demo">
+                    <h4>Neumorphic MD</h4>
+                    <p>Standard effect</p>
+                </div>
+                <div class="neumorphic-lg neuro-demo">
+                    <h4>Neumorphic LG</h4>
+                    <p>Large embossed effect</p>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>&lt;div class="neumorphic"&gt;<br/>
+&nbsp;&nbsp;&lt;h3&gt;Soft UI Effect&lt;/h3&gt;<br/>
+&nbsp;&nbsp;&lt;p&gt;Gradient + Dual shadows&lt;/p&gt;<br/>
+&lt;/div&gt;</code>
+            </div>
+        </div>
+
+        <!-- Claymorphism Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🏺</span>
+                Claymorphism
+            </div>
+            <div class="section-description">
+                Claymorphism creates a clay-like, soft, rounded appearance with gradient backgrounds and smooth shadows.
+                It feels warm, friendly, and modern.
+            </div>
+
+            <div class="card-showcase">
+                <div class="clay clay-sm showcase-card">
+                    <h3>Clay Small</h3>
+                    <p>Compact clay-like container with soft appearance and smooth gradients</p>
+                    <span class="badge-clay">Clay Style</span>
+                </div>
+                <div class="clay showcase-card">
+                    <h3>Clay Medium</h3>
+                    <p>Standard clay container with enhanced visual hierarchy and soft shadows</p>
+                    <span class="badge-clay">Default</span>
+                </div>
+                <div class="clay clay-lg showcase-card">
+                    <h3>Clay Large</h3>
+                    <p>Large clay container with generous padding for feature highlights</p>
+                    <span class="badge-clay">Spacious</span>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>&lt;div class="clay"&gt;<br/>
+&nbsp;&nbsp;&lt;h3&gt;Clay-like Effect&lt;/h3&gt;<br/>
+&nbsp;&nbsp;&lt;p&gt;Warm, friendly appearance&lt;/p&gt;<br/>
+&lt;/div&gt;</code>
+            </div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🔘</span>
+                Morphic Buttons
+            </div>
+            <div class="section-description">
+                Buttons available in all three morphic styles with interactive hover and active states.
+            </div>
+
+            <div class="button-showcase">
+                <div class="button-group">
+                    <span class="button-label">Glassmorphic</span>
+                    <button class="btn-glass">Glass Button</button>
+                </div>
+                <div class="button-group">
+                    <span class="button-label">Neumorphic</span>
+                    <button class="btn-neumorphic">Soft Button</button>
+                </div>
+                <div class="button-group">
+                    <span class="button-label">Clay</span>
+                    <button class="btn-clay">Clay Button</button>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>&lt;button class="btn-glass"&gt;Glassmorphic&lt;/button&gt;<br/>
+&lt;button class="btn-neumorphic"&gt;Neumorphic&lt;/button&gt;<br/>
+&lt;button class="btn-clay"&gt;Claymorphism&lt;/button&gt;</code>
+            </div>
+        </div>
+
+        <!-- Inputs Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>⌨️</span>
+                Morphic Inputs
+            </div>
+            <div class="section-description">
+                Form inputs styled with morphic design patterns for beautiful and intuitive forms.
+            </div>
+
+            <div class="input-showcase">
+                <div class="input-group">
+                    <label>Glassmorphic Input</label>
+                    <input type="text" class="input-glass" placeholder="Enter text...">
+                </div>
+                <div class="input-group">
+                    <label>Neumorphic Input</label>
+                    <input type="text" class="input-neumorphic" placeholder="Enter text...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Panels Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>📦</span>
+                Morphic Panels
+            </div>
+            <div class="section-description">
+                Container panels for organizing content with morphic styling.
+            </div>
+
+            <div class="card-showcase">
+                <div class="panel-glass showcase-card">
+                    <h3>Glass Panel</h3>
+                    <p>Transparent panel with frosted glass effect. Great for overlays and modals.</p>
+                    <span class="badge-glass">Transparent</span>
+                </div>
+                <div class="panel-neumorphic showcase-card">
+                    <h3>Neumorphic Panel</h3>
+                    <p>Soft UI panel with subtle shadows. Perfect for content sections.</p>
+                    <span class="badge-neumorphic">Soft UI</span>
+                </div>
+                <div class="panel-clay showcase-card">
+                    <h3>Clay Panel</h3>
+                    <p>Warm clay-like panel. Ideal for feature highlights and cards.</p>
+                    <span class="badge-clay">Friendly</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Badges Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🏷️</span>
+                Morphic Badges
+            </div>
+            <div class="section-description">
+                Small indicators and labels styled with morphic patterns.
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                <span class="badge-glass">Glass Badge</span>
+                <span class="badge-neumorphic">Neumorphic</span>
+                <span class="badge-clay">Clay Badge</span>
+            </div>
+        </div>
+
+        <!-- Animations Section -->
+        <div class="section">
+            <div class="section-title">
+                <span>🎬</span>
+                Morphic Animations
+            </div>
+            <div class="section-description">
+                Built-in animations for morphic elements. Add motion and life to your UI.
+            </div>
+
+            <div class="animation-showcase">
+                <div class="animation-demo">
+                    <div class="glass-glow" style="width: 80px; height: 80px; background: rgba(59, 130, 246, 0.2); border-radius: 16px; backdrop-filter: blur(10px);"></div>
+                    <h4>Glass Glow</h4>
+                    <p>Pulsing glow effect</p>
+                </div>
+                <div class="animation-demo">
+                    <div class="neumorphic-pulse" style="width: 80px; height: 80px;"></div>
+                    <h4>Neumorphic Pulse</h4>
+                    <p>Shadow depth animation</p>
+                </div>
+                <div class="animation-demo">
+                    <div class="clay-float" style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.1)); border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
+                    <h4>Clay Float</h4>
+                    <p>Floating motion</p>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <code>.glass-glow { animation: glass-glow 2s infinite; }<br/>
+.neumorphic-pulse { animation: neumorphic-pulse 2s ease-in-out infinite; }<br/>
+.clay-float { animation: clay-float 3s ease-in-out infinite; }</code>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="section">
+            <div class="section-title">
+                <span>📊</span>
+                Morphism Comparison
+            </div>
+            <div class="section-description">
+                Quick comparison of morphic design styles to help you choose the right one for your project.
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Style</th>
+                        <th>Characteristics</th>
+                        <th>Best For</th>
+                        <th>Feel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Glassmorphism</strong></td>
+                        <td>Frosted glass, backdrop blur, transparency</td>
+                        <td>Modern apps, overlays, dashboards</td>
+                        <td>Elegant, sophisticated</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Neumorphism</strong></td>
+                        <td>Soft shadows, gradients, extruded effect</td>
+                        <td>Minimal design, soft interfaces</td>
+                        <td>Subtle, intuitive</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Claymorphism</strong></td>
+                        <td>Rounded, gradient, warm appearance</td>
+                        <td>Friendly apps, feature cards</td>
+                        <td>Warm, approachable</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Skeuomorphism</strong></td>
+                        <td>Real-world object simulation</td>
+                        <td>Familiar interactions</td>
+                        <td>Realistic, tactile</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="section">
+            <div class="section-title">
+                <span>💡</span>
+                Best Practices
+            </div>
+
+            <div class="card-showcase">
+                <div class="panel-glass showcase-card">
+                    <h3>Choose One Style</h3>
+                    <p>Stick to one primary morphic style throughout your design to maintain consistency and visual
+                        coherence.</p>
+                </div>
+                <div class="panel-neumorphic showcase-card">
+                    <h3>Layer Purposefully</h3>
+                    <p>Use morphic effects to create visual hierarchy. Use depth to indicate importance and function.</p>
+                </div>
+                <div class="panel-clay showcase-card">
+                    <h3>Performance First</h3>
+                    <p>Backdrop filters can impact performance. Use them strategically and provide fallbacks for older
+                        browsers.</p>
+                </div>
+                <div class="panel-glass showcase-card">
+                    <h3>Accessibility</h3>
+                    <p>Ensure sufficient contrast. Morphic effects should enhance, not hinder readability and usability.</p>
+                </div>
+                <div class="panel-neumorphic showcase-card">
+                    <h3>Interactive Feedback</h3>
+                    <p>Provide clear hover, focus, and active states. Users need clear feedback for interactive elements.
+                    </p>
+                </div>
+                <div class="panel-clay showcase-card">
+                    <h3>Test Across Browsers</h3>
+                    <p>Backdrop filters and advanced CSS may have limited browser support. Test thoroughly and include
+                        fallbacks.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Guide -->
+        <div class="section">
+            <div class="section-title">
+                <span>📖</span>
+                Quick Start Guide
+            </div>
+
+            <div class="panel-glass showcase-card" style="max-width: 100%;">
+                <h3>How to Use Morphism Styles</h3>
+                <p style="margin-bottom: 20px;">Include the morphism.css in your HTML head:</p>
+
+                <div class="code-block">
+                    <code>&lt;link rel="stylesheet" href="morphism.css"&gt;</code>
+                </div>
+
+                <p style="margin-top: 20px; margin-bottom: 20px;">Then apply classes to your elements:</p>
+
+                <div class="code-block">
+                    <code>
+                        &lt;!-- Glassmorphism --&gt;<br/>
+                        &lt;div class="glass glass-md"&gt;Content&lt;/div&gt;<br/>
+                        &lt;button class="btn-glass"&gt;Click Me&lt;/button&gt;<br/>
+                        &lt;input class="input-glass" type="text"&gt;<br/>
+                        <br/>
+                        &lt;!-- Neumorphism --&gt;<br/>
+                        &lt;div class="neumorphic"&gt;Content&lt;/div&gt;<br/>
+                        &lt;button class="btn-neumorphic"&gt;Click Me&lt;/button&gt;<br/>
+                        &lt;input class="input-neumorphic" type="text"&gt;<br/>
+                        <br/>
+                        &lt;!-- Claymorphism --&gt;<br/>
+                        &lt;div class="clay"&gt;Content&lt;/div&gt;<br/>
+                        &lt;button class="btn-clay"&gt;Click Me&lt;/button&gt;
+                    </code>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
